@@ -1,0 +1,213 @@
+import { useQuery } from '@tanstack/react-query';
+import {
+  ArrowUpRight,
+  Check,
+  Database,
+  FileText,
+  RefreshCw,
+  Server,
+  Sparkles,
+} from 'lucide-react';
+
+import { StatusIndicator, type Status } from '@/components/status-indicator';
+import { fetchHealth } from '@/lib/api';
+
+const nextMilestones = [
+  {
+    title: 'Document ingestion',
+    description: 'PDF upload, page-aware extraction, chunking, and ingestion status.',
+    icon: FileText,
+  },
+  {
+    title: 'Embeddings and retrieval',
+    description: 'pgvector storage and semantic search over document chunks.',
+    icon: Database,
+  },
+  {
+    title: 'Grounded answers',
+    description: 'RAG responses with validated page citations and source previews.',
+    icon: Sparkles,
+  },
+];
+
+export function SystemStatusPage() {
+  const healthQuery = useQuery({
+    queryKey: ['health'],
+    queryFn: ({ signal }) => fetchHealth(signal),
+    refetchInterval: 30_000,
+  });
+
+  const apiStatus: Status = healthQuery.isPending
+    ? 'checking'
+    : healthQuery.isError
+      ? 'offline'
+      : 'online';
+
+  const apiLabel = healthQuery.isPending
+    ? 'Checking API'
+    : healthQuery.isError
+      ? 'API unreachable'
+      : 'API online';
+
+  return (
+    <div className="space-y-6">
+      <header>
+        <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1 text-xs font-medium text-muted">
+          <span className="size-1.5 rounded-full bg-primary" aria-hidden="true" />
+          Milestone 0
+        </div>
+        <h1 className="text-2xl font-semibold leading-8 tracking-[-0.02em]">System readiness</h1>
+        <p className="mt-1 max-w-2xl text-sm leading-[22px] text-muted">
+          DocuMind is running locally. This screen verifies the web application, API, and
+          containerized development environment before product features are added.
+        </p>
+      </header>
+
+      <section className="grid gap-4 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
+        <article className="rounded-lg border border-border bg-surface p-6">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex size-10 items-center justify-center rounded-md border border-border bg-background text-primary">
+              <Server aria-hidden="true" size={18} strokeWidth={2} />
+            </div>
+            <button
+              type="button"
+              onClick={() => void healthQuery.refetch()}
+              disabled={healthQuery.isFetching}
+              className="inline-flex h-8 items-center gap-1.5 rounded-md border border-border bg-surface px-3 text-xs font-medium text-foreground transition-colors hover:bg-background disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <RefreshCw
+                aria-hidden="true"
+                size={13}
+                className={healthQuery.isFetching ? 'animate-spin' : undefined}
+              />
+              Refresh
+            </button>
+          </div>
+
+          <h2 className="mt-5 text-lg font-semibold leading-7">API service</h2>
+          <p className="mt-1 text-sm leading-[22px] text-muted">
+            FastAPI exposes the versioned API under <code className="font-mono">/api/v1</code>.
+          </p>
+
+          <div className="mt-5">
+            <StatusIndicator status={apiStatus} label={apiLabel} />
+          </div>
+
+          {healthQuery.data ? (
+            <dl className="mt-5 grid gap-3 border-t border-border pt-5 sm:grid-cols-3">
+              <div>
+                <dt className="text-xs font-medium text-muted">Service</dt>
+                <dd className="mt-1 truncate text-sm font-medium">{healthQuery.data.service}</dd>
+              </div>
+              <div>
+                <dt className="text-xs font-medium text-muted">Version</dt>
+                <dd className="mt-1 font-mono text-sm">{healthQuery.data.version}</dd>
+              </div>
+              <div>
+                <dt className="text-xs font-medium text-muted">Environment</dt>
+                <dd className="mt-1 text-sm capitalize">{healthQuery.data.environment}</dd>
+              </div>
+            </dl>
+          ) : null}
+
+          {healthQuery.isError ? (
+            <p className="mt-5 rounded-md border border-error/20 bg-error/5 px-3 py-2 text-xs leading-5 text-error">
+              {healthQuery.error instanceof Error
+                ? healthQuery.error.message
+                : 'The API health check failed.'}
+            </p>
+          ) : null}
+
+          <div className="mt-5 flex flex-wrap items-center gap-4 border-t border-border pt-5">
+            <code className="rounded bg-background px-2 py-1 font-mono text-xs text-muted">
+              GET /api/v1/health
+            </code>
+            <a
+              href="/api/docs"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary-hover"
+            >
+              Open API docs
+              <ArrowUpRight aria-hidden="true" size={13} />
+            </a>
+          </div>
+        </article>
+
+        <article className="rounded-lg border border-border bg-surface p-6">
+          <h2 className="text-lg font-semibold leading-7">Environment</h2>
+          <p className="mt-1 text-sm leading-[22px] text-muted">
+            Services defined in Docker Compose for local development.
+          </p>
+
+          <ul className="mt-5 space-y-4">
+            <li className="flex items-start gap-3">
+              <span className="mt-0.5 flex size-5 items-center justify-center rounded-full bg-success/10 text-success">
+                <Check aria-hidden="true" size={12} strokeWidth={2.5} />
+              </span>
+              <div>
+                <p className="text-sm font-medium">Web application</p>
+                <p className="mt-0.5 text-xs leading-5 text-muted">
+                  Rsbuild dev server with React and Tailwind CSS
+                </p>
+              </div>
+            </li>
+            <li className="flex items-start gap-3">
+              <span className="mt-0.5 flex size-5 items-center justify-center rounded-full bg-success/10 text-success">
+                <Check aria-hidden="true" size={12} strokeWidth={2.5} />
+              </span>
+              <div>
+                <p className="text-sm font-medium">API container</p>
+                <p className="mt-0.5 text-xs leading-5 text-muted">
+                  FastAPI, Pydantic v2, and Uvicorn
+                </p>
+              </div>
+            </li>
+            <li className="flex items-start gap-3">
+              <span className="mt-0.5 flex size-5 items-center justify-center rounded-full bg-success/10 text-success">
+                <Check aria-hidden="true" size={12} strokeWidth={2.5} />
+              </span>
+              <div>
+                <p className="text-sm font-medium">PostgreSQL + pgvector</p>
+                <p className="mt-0.5 text-xs leading-5 text-muted">
+                  Database container with the vector extension enabled
+                </p>
+              </div>
+            </li>
+          </ul>
+
+          <p className="mt-5 border-t border-border pt-4 text-xs leading-5 text-muted">
+            The status above reflects the API response. Database connectivity is added in
+            Milestone 1.
+          </p>
+        </article>
+      </section>
+
+      <section className="rounded-lg border border-border bg-surface p-6">
+        <h2 className="text-lg font-semibold leading-7">What comes next</h2>
+        <p className="mt-1 text-sm leading-[22px] text-muted">
+          Product functionality is intentionally deferred until the foundation is verified.
+        </p>
+
+        <div className="mt-5 grid gap-3 md:grid-cols-3">
+          {nextMilestones.map((milestone, index) => {
+            const Icon = milestone.icon;
+
+            return (
+              <div key={milestone.title} className="rounded-md border border-border bg-background p-4">
+                <div className="flex items-center justify-between">
+                  <Icon aria-hidden="true" size={16} className="text-muted" />
+                  <span className="font-mono text-[11px] text-muted">
+                    {String(index + 1).padStart(2, '0')}
+                  </span>
+                </div>
+                <p className="mt-4 text-sm font-medium">{milestone.title}</p>
+                <p className="mt-1 text-xs leading-5 text-muted">{milestone.description}</p>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+    </div>
+  );
+}

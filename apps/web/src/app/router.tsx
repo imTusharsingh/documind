@@ -1,0 +1,22 @@
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+
+import { AppShell } from '@/components/app-shell';
+import { SystemStatusPage } from './system-status-page';
+
+export function AppRouter() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <AppShell>
+              <SystemStatusPage />
+            </AppShell>
+          }
+        />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </BrowserRouter>
+  );
+}
