@@ -28,7 +28,7 @@ class Settings(BaseSettings):
     db_connect_timeout: int = 3
 
     upload_dir: str = Field(
-        default="data/uploads",
+        default="/data/uploads",
         validation_alias=AliasChoices("UPLOAD_DIR", "DOCUMIND_UPLOAD_DIR"),
     )
     max_upload_mb: int = Field(
