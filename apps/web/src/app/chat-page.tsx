@@ -3,6 +3,7 @@ import { AlertCircle, BookOpen, LoaderCircle, Send, Sparkles } from 'lucide-reac
 import { useState, type FormEvent } from 'react';
 
 import { ApiError, askQuestion, type ChatResponse } from '@/lib/api';
+import { PageHeader } from '@/components/ui';
 
 function errorMessage(error: unknown): string {
   if (error instanceof ApiError || error instanceof Error) {
@@ -58,16 +59,7 @@ export function ChatPage() {
 
   return (
     <div className="space-y-6">
-      <header>
-        <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1 text-xs font-medium text-muted">
-          <span className="size-1.5 rounded-full bg-primary" aria-hidden="true" />
-          Milestone 4
-        </div>
-        <h1 className="text-2xl font-semibold leading-8 tracking-[-0.02em]">Ask your documents</h1>
-        <p className="mt-1 max-w-2xl text-sm leading-[22px] text-muted">
-          Answers are grounded in retrieved passages and include page-level sources. When the documents do not support an answer, DocuMind says so.
-        </p>
-      </header>
+      <PageHeader eyebrow="Grounded answers" title="Ask your documents" description="Answers are grounded in retrieved passages and include page-level sources. When the documents do not support an answer, DocuMind says so." />
 
       <section className="space-y-4">
         {askMutation.data ? <Answer response={askMutation.data} /> : (

@@ -146,6 +146,25 @@ export interface EvaluationReportResponse {
   generated_at: string;
 }
 
+export interface UsageEvent {
+  id: string;
+  conversation_id: string;
+  conversation_title: string;
+  input_tokens: number;
+  output_tokens: number;
+  total_tokens: number;
+  latency_ms: number | null;
+  created_at: string;
+}
+
+export interface UsageResponse {
+  input_tokens: number;
+  output_tokens: number;
+  total_tokens: number;
+  request_count: number;
+  events: UsageEvent[];
+}
+
 interface ErrorEnvelope {
   error: {
     code: string;
@@ -211,6 +230,12 @@ export async function fetchOwner(signal?: AbortSignal): Promise<OwnerResponse> {
   }
 
   return (await response.json()) as OwnerResponse;
+}
+
+export async function fetchUsage(signal?: AbortSignal): Promise<UsageResponse> {
+  const response = await fetch('/api/v1/usage', { headers: { Accept: 'application/json' }, signal });
+  if (!response.ok) throw await toApiError(response);
+  return (await response.json()) as UsageResponse;
 }
 
 export async function fetchDocuments(signal?: AbortSignal): Promise<DocumentResponse[]> {

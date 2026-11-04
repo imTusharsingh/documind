@@ -14,6 +14,7 @@ import { Link } from 'react-router-dom';
 
 import { StatusIndicator, type Status } from '@/components/status-indicator';
 import { fetchHealth, fetchOwner } from '@/lib/api';
+import { PageHeader } from '@/components/ui';
 
 const milestones = [
   {
@@ -94,27 +95,13 @@ export function SystemStatusPage() {
 
   return (
     <div className="space-y-6">
-      <header className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1 text-xs font-medium text-muted">
-            <span className="size-1.5 rounded-full bg-primary" aria-hidden="true" />
-            Milestone 4
-          </div>
-          <h1 className="text-2xl font-semibold leading-8 tracking-[-0.02em]">System readiness</h1>
-          <p className="mt-1 max-w-2xl text-sm leading-[22px] text-muted">
-            DocuMind is running locally. This screen verifies the web application, the API, and its
-            PostgreSQL connection alongside the document ingestion pipeline.
-          </p>
-        </div>
-
-        <Link
+      <PageHeader eyebrow="Operations" title="System readiness" description="DocuMind is running locally. This screen verifies the web application, the API, and its PostgreSQL connection alongside the document ingestion pipeline." action={<Link
           to="/documents"
           className="inline-flex h-9 items-center gap-1.5 rounded-md bg-primary px-3 text-xs font-medium text-white transition-colors hover:bg-primary-hover"
         >
           Manage documents
           <ArrowRight aria-hidden="true" size={13} />
-        </Link>
-      </header>
+        </Link>} />
 
       <section className="grid gap-4 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
         <article className="rounded-lg border border-border bg-surface p-6">

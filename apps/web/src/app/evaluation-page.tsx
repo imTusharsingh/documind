@@ -12,6 +12,7 @@ import {
   runEvaluationDataset,
   type EvaluationDraftCase,
 } from '@/lib/api';
+import { PageHeader } from '@/components/ui';
 
 function errorMessage(error: unknown): string {
   if (error instanceof ApiError || error instanceof Error) return error.message;
@@ -69,16 +70,7 @@ export function EvaluationPage() {
 
   return (
     <div className="space-y-6">
-      <header>
-        <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1 text-xs font-medium text-muted">
-          <span className="size-1.5 rounded-full bg-primary" aria-hidden="true" />
-          Milestone 8
-        </div>
-        <h1 className="text-2xl font-semibold leading-8 tracking-[-0.02em]">Evaluate retrieval</h1>
-        <p className="mt-1 max-w-2xl text-sm leading-[22px] text-muted">
-          Build multi-case evaluation sets, export reports, and catch quality regressions before they ship.
-        </p>
-      </header>
+      <PageHeader eyebrow="Quality control" title="Evaluate retrieval" description="Build multi-case evaluation sets, export reports, and catch quality regressions before they ship." />
 
       <section className="rounded-lg border border-border bg-surface p-6">
         <form onSubmit={handleSubmit} className="space-y-4">

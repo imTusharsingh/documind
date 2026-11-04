@@ -17,6 +17,7 @@ import {
   uploadDocument,
   type DocumentResponse,
 } from '@/lib/api';
+import { PageHeader } from '@/components/ui';
 
 const dateFormatter = new Intl.DateTimeFormat(undefined, {
   dateStyle: 'medium',
@@ -119,20 +120,7 @@ export function DocumentsPage() {
 
   return (
     <div className="space-y-6">
-      <header className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1 text-xs font-medium text-muted">
-            <span className="size-1.5 rounded-full bg-primary" aria-hidden="true" />
-            Milestone 3
-          </div>
-          <h1 className="text-2xl font-semibold leading-8 tracking-[-0.02em]">Documents</h1>
-          <p className="mt-1 max-w-2xl text-sm leading-[22px] text-muted">
-            Upload PDFs to the research workspace. A background worker extracts text, splits it
-            into page-aware chunks, embeds them, and makes them available for semantic search.
-          </p>
-        </div>
-
-        <button
+      <PageHeader eyebrow="Knowledge base" title="Documents" description="Upload PDFs to the research workspace. A background worker extracts text, splits it into page-aware chunks, embeds them, and makes them available for semantic search." action={<button
           type="button"
           onClick={() => void documentsQuery.refetch()}
           disabled={documentsQuery.isFetching}
@@ -144,8 +132,7 @@ export function DocumentsPage() {
             className={documentsQuery.isFetching ? 'animate-spin' : undefined}
           />
           Refresh
-        </button>
-      </header>
+        </button>} />
 
       <section className="rounded-lg border border-border bg-surface p-6">
         <div className="flex items-start gap-3">

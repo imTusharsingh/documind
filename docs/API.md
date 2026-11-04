@@ -197,6 +197,10 @@ Returns chronological run summaries for the dataset, including labels, embedding
 
 Returns an exportable evaluation report containing dataset thresholds, run summaries, and regression failures. Pass `?format=csv` to download a flattened CSV report for offline analysis. A run records `regression_passed` and `regression_failures` when thresholds are configured.
 
+### `GET /api/v1/usage`
+
+Returns owner-scoped token usage totals and recent grounded-answer events. The `limit` query parameter accepts 1–100 events and defaults to 30. Token usage is read from persisted assistant messages; provider secrets are never returned.
+
 ### Document lifecycle
 
 ```text

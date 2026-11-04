@@ -58,6 +58,11 @@ def test_chat_returns_validated_citations_and_persists_conversation(
     assert [message["role"] for message in detail.json()["messages"]] == ["user", "assistant"]
     assert detail.json()["messages"][1]["citations"][0]["page_number"] == 2
 
+    usage = client.get("/api/v1/usage")
+    assert usage.status_code == 200
+    assert usage.json()["total_tokens"] == 18
+    assert usage.json()["events"][0]["conversation_id"] == body["conversation_id"]
+
 
 def test_chat_returns_insufficient_evidence_without_relevant_hits(
     client: TestClient,

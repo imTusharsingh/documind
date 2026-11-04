@@ -1,4 +1,4 @@
-import { BarChart3, FileSearch, FileText, LayoutDashboard, LibraryBig, MessageSquareText } from 'lucide-react';
+import { BarChart3, FileSearch, FileText, LayoutDashboard, LibraryBig, MessageSquareText, Settings, WalletCards } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { NavLink } from 'react-router-dom';
 
@@ -14,6 +14,8 @@ const navigation = [
   { to: '/search', label: 'Search', icon: FileSearch, end: false },
   { to: '/chat', label: 'Ask', icon: MessageSquareText, end: false },
   { to: '/evaluation', label: 'Evaluation', icon: BarChart3, end: false },
+  { to: '/usage', label: 'Usage', icon: WalletCards, end: false },
+  { to: '/settings', label: 'Settings', icon: Settings, end: false },
 ];
 
 export function AppShell({ children }: AppShellProps) {
@@ -56,9 +58,9 @@ export function AppShell({ children }: AppShellProps) {
             })}
           </nav>
 
-          <div className="border-t border-border px-6 py-5">
-            <p className="text-xs font-medium text-foreground">Milestone 8</p>
-            <p className="mt-1 text-xs leading-5 text-muted">Evaluation reports</p>
+          <div className="border-t border-border px-3 py-4">
+            <p className="px-3 pt-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">DocuMind workspace</p>
+            <p className="px-3 pt-1 text-xs text-muted">Grounded research, in one place.</p>
           </div>
         </aside>
 

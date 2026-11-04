@@ -5,7 +5,9 @@ import { ChatPage } from './chat-page';
 import { EvaluationPage } from './evaluation-page';
 import { DocumentsPage } from './documents-page';
 import { SearchPage } from './search-page';
-import { SystemStatusPage } from './system-status-page';
+import { OverviewPage } from './overview-page';
+import { SettingsPage } from './settings-page';
+import { UsagePage } from './usage-page';
 
 export function AppRouter() {
   return (
@@ -15,7 +17,7 @@ export function AppRouter() {
           path="/"
           element={
             <AppShell>
-              <SystemStatusPage />
+            <OverviewPage />
             </AppShell>
           }
         />
@@ -51,6 +53,8 @@ export function AppRouter() {
             </AppShell>
           }
         />
+        <Route path="/usage" element={<AppShell><UsagePage /></AppShell>} />
+        <Route path="/settings" element={<AppShell><SettingsPage /></AppShell>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>

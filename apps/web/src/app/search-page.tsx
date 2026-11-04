@@ -3,6 +3,7 @@ import { AlertCircle, FileSearch, LoaderCircle, Search } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 
 import { ApiError, searchDocuments, type SearchResult } from '@/lib/api';
+import { PageHeader } from '@/components/ui';
 
 function errorMessage(error: unknown): string {
   if (error instanceof ApiError || error instanceof Error) {
@@ -50,16 +51,7 @@ export function SearchPage() {
 
   return (
     <div className="space-y-6">
-      <header>
-        <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1 text-xs font-medium text-muted">
-          <span className="size-1.5 rounded-full bg-primary" aria-hidden="true" />
-          Milestone 3
-        </div>
-        <h1 className="text-2xl font-semibold leading-8 tracking-[-0.02em]">Search your documents</h1>
-        <p className="mt-1 max-w-2xl text-sm leading-[22px] text-muted">
-          Ask a question or describe a topic. Search ranks the closest embedded passages and keeps each result tied to its document page.
-        </p>
-      </header>
+      <PageHeader eyebrow="Semantic search" title="Search your documents" description="Ask a question or describe a topic. Search ranks the closest embedded passages and keeps each result tied to its document page." />
 
       <section className="rounded-lg border border-border bg-surface p-6">
         <form onSubmit={handleSubmit} className="flex flex-col gap-3 sm:flex-row">
