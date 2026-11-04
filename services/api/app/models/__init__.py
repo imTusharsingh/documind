@@ -7,6 +7,12 @@ is what Alembic autogenerate and the test fixtures rely on.
 from app.models.base import Base
 from app.models.conversation import Conversation, Message, MessageCitation, MessageRole
 from app.models.document import Document, DocumentChunk, DocumentStatus
+from app.models.evaluation import (
+    EvaluationDataset,
+    EvaluationDatasetCase,
+    EvaluationRun,
+    EvaluationRunResult,
+)
 from app.models.user import User
 
 __all__ = [
@@ -15,6 +21,10 @@ __all__ = [
     "Document",
     "DocumentChunk",
     "DocumentStatus",
+    "EvaluationDataset",
+    "EvaluationDatasetCase",
+    "EvaluationRun",
+    "EvaluationRunResult",
     "Message",
     "MessageCitation",
     "MessageRole",

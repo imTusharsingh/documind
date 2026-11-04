@@ -36,7 +36,7 @@ function ResultCard({ result }: { result: SearchResult }) {
 
 export function SearchPage() {
   const [query, setQuery] = useState('');
-  const searchMutation = useMutation({ mutationFn: searchDocuments });
+  const searchMutation = useMutation({ mutationFn: (value: string) => searchDocuments(value) });
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

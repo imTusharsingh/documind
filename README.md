@@ -2,9 +2,9 @@
 
 DocuMind is an AI-powered document research assistant. This repository is being built incrementally as a learning project covering FastAPI, PostgreSQL, pgvector, RAG, Docker, and production-quality frontend engineering.
 
-**Current status:** Milestone 5 complete — retrieval evaluation.
+**Current status:** Milestone 6 complete — persistent evaluation datasets and run history.
 
-![DocuMind Milestone 5](docs/screenshots/milestone-5.png)
+![DocuMind Milestone 6](docs/screenshots/milestone-6.png)
 
 ## What works today
 
@@ -26,6 +26,7 @@ DocuMind is an AI-powered document research assistant. This repository is being 
 - Reprocess endpoint for failed documents and existing documents after embedding changes
 - Grounded chat answers with persisted conversations, source previews, and validated citations
 - Stateless retrieval evaluation with Recall@k, MRR, and page-match metrics
+- Persistent owner-scoped evaluation datasets with historical quality comparisons
 - Docker Compose for the web app, API, worker, and database, with health checks
 - **Rstest** + React Testing Library component tests
 - Pytest integration tests against a real PostgreSQL database
@@ -55,6 +56,7 @@ FastAPI
   +-- /api/v1/chat          grounded answers with validated citations
   +-- /api/v1/conversations conversation history and source citations
   +-- /api/v1/evaluation/run retrieval evaluation metrics
+  +-- /api/v1/evaluation/datasets reusable evaluation cases and run history
   |
   +-----------------------------+
   v                             v
@@ -187,9 +189,9 @@ documind/
 - One document owner, seeded by migration `0002`.
 - Text-based PDFs only; scanned PDFs fail with an explicit message because OCR is not included.
 - Chunking uses `cl100k_base`, 350 tokens with 50 tokens of overlap, never crossing page boundaries.
-- Evaluation runs are stateless; persistent dataset management is not implemented yet.
+- Evaluation datasets store expected document/page sources; runs store metrics and retrieved sources for comparison.
 - No secrets are present in the frontend. The OpenAI key belongs in the backend `.env` only.
 
 ## Next milestone
 
-Milestone 6 will add persistent evaluation datasets and broader quality reporting.
+Milestone 7 will add richer dataset editing, model/configuration labels, and trend visualizations.

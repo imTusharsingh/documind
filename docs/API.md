@@ -169,6 +169,22 @@ Runs a stateless retrieval evaluation. Each case supplies a question and one or 
 
 Results are not persisted in the MVP, so an evaluation run is safe to repeat after changing chunking, embeddings, or retrieval settings.
 
+### `POST /api/v1/evaluation/datasets`
+
+Creates an owner-scoped reusable evaluation dataset. Each expected source is checked against the current owner's documents before it is persisted.
+
+### `GET /api/v1/evaluation/datasets`
+
+Lists saved datasets with case counts, run counts, and the latest aggregate metrics.
+
+### `GET /api/v1/evaluation/datasets/{dataset_id}`
+
+Returns one dataset's cases and historical run summaries. Cross-owner ids return `404 NOT_FOUND`.
+
+### `POST /api/v1/evaluation/datasets/{dataset_id}/runs`
+
+Runs every stored case with the selected retrieval settings and persists aggregate metrics plus per-case retrieved sources. Repeating a run creates a new immutable history entry.
+
 ### Document lifecycle
 
 ```text
@@ -224,4 +240,4 @@ The frontend relies on `error.code`, not on message text, so wording can change 
 
 | Method | Path | Purpose | Milestone |
 | --- | --- | --- | --- |
-| `POST` | `/evaluation/datasets` | Persist reusable evaluation datasets | 6 |
+| `PATCH` | `/evaluation/datasets/{dataset_id}` | Edit a saved dataset | 7 |

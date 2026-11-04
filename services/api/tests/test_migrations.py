@@ -5,7 +5,7 @@ def test_migrations_are_at_head(engine: Engine) -> None:
     with engine.connect() as connection:
         version = connection.execute(text("SELECT version_num FROM alembic_version")).scalar()
 
-    assert version == "0005"
+    assert version == "0006"
 
 
 def test_users_table_has_expected_columns(engine: Engine) -> None:

@@ -532,3 +532,37 @@ The endpoint is stateless so evaluation can be run against changing retrieval co
 
 Milestone 6 will add persistent evaluation datasets and historical quality comparisons.
 
+## Milestone 6 — Persistent evaluation datasets
+
+**Date:** 2026-11-04
+
+### What was built
+
+- Owner-scoped evaluation dataset and case tables
+- Dataset creation with document ownership validation
+- Persisted evaluation runs with retrieval settings and aggregate metrics
+- Per-case run results with retrieved source details
+- Evaluation UI for saving datasets, rerunning them, and viewing latest history
+- Migration, API, and integration coverage for the persistent workflow
+
+### Concepts learned
+
+Stateless evaluation is useful for experimentation, but persistence is needed to compare retrieval changes over time. A dataset stores the intended test cases; a run stores the configuration and observations. Keeping runs immutable preserves the evidence behind a quality comparison. Authorization is checked when the dataset is created and again when it is read or run through the owner-scoped dataset query.
+
+### Interview questions
+
+1. Why should evaluation runs be immutable?
+2. What does a dataset own, and what does a run own?
+3. Why validate expected document ids before saving a dataset?
+4. Why store per-case results when aggregate metrics are available?
+5. Which retrieval settings are required for a fair comparison?
+6. How should deletion of a referenced document affect future runs?
+7. Why is owner filtering part of the dataset lookup rather than only the UI?
+8. How would you label runs by embedding model and chunking configuration?
+9. What is the trade-off between JSON source snapshots and normalized result tables?
+10. How would you detect a quality regression from historical runs?
+
+### Next milestone
+
+Milestone 7 will add dataset editing, run labels, and trend visualizations.
+

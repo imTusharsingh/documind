@@ -90,6 +90,38 @@ export interface EvaluationResponse {
   results: EvaluationCaseResult[];
 }
 
+export interface EvaluationRunSummary {
+  id: string;
+  top_k: number;
+  min_similarity: number;
+  case_count: number;
+  recall_at_k: number;
+  mean_reciprocal_rank: number;
+  page_match_rate: number;
+  created_at: string;
+}
+
+export interface EvaluationDataset {
+  id: string;
+  name: string;
+  description: string | null;
+  case_count: number;
+  run_count: number;
+  latest_run: EvaluationRunSummary | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface EvaluationDatasetDetail extends EvaluationDataset {
+  cases: { question: string; expected_sources: { document_id: string; page_number: number }[] }[];
+  runs: EvaluationRunSummary[];
+}
+
+export interface PersistentEvaluationResponse extends EvaluationRunSummary {
+  dataset_id: string;
+  results: EvaluationCaseResult[];
+}
+
 interface ErrorEnvelope {
   error: {
     code: string;
@@ -265,4 +297,35 @@ export async function runEvaluation(
   }
 
   return (await response.json()) as EvaluationResponse;
+}
+
+export async function fetchEvaluationDatasets(signal?: AbortSignal): Promise<EvaluationDataset[]> {
+  const response = await fetch('/api/v1/evaluation/datasets', { headers: { Accept: 'application/json' }, signal });
+  if (!response.ok) throw await toApiError(response);
+  return (await response.json()) as EvaluationDataset[];
+}
+
+export async function createEvaluationDataset(
+  name: string,
+  question: string,
+  documentId: string,
+  pageNumber: number,
+): Promise<EvaluationDatasetDetail> {
+  const response = await fetch('/api/v1/evaluation/datasets', {
+    method: 'POST',
+    headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, cases: [{ question, expected_sources: [{ document_id: documentId, page_number: pageNumber }] }] }),
+  });
+  if (!response.ok) throw await toApiError(response);
+  return (await response.json()) as EvaluationDatasetDetail;
+}
+
+export async function runEvaluationDataset(datasetId: string): Promise<PersistentEvaluationResponse> {
+  const response = await fetch(`/api/v1/evaluation/datasets/${encodeURIComponent(datasetId)}/runs`, {
+    method: 'POST',
+    headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+    body: JSON.stringify({ top_k: 5 }),
+  });
+  if (!response.ok) throw await toApiError(response);
+  return (await response.json()) as PersistentEvaluationResponse;
 }

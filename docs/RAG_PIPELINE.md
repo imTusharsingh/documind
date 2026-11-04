@@ -69,4 +69,6 @@ Milestone 5 implements a stateless evaluation endpoint. A request contains quest
 - Citation page match rate when running answer generation
 - Average latency and token usage
 
-Results are returned to the frontend and can be inspected in the Evaluation page. Persistent datasets and historical comparisons remain future work.
+Results are returned to the frontend and can be inspected in the Evaluation page. Milestone 6 persists datasets, validates their expected sources against the owner, and stores immutable run summaries and per-case retrieved sources for historical comparison.
+
+Persistent evaluation data is deliberately separate from production document chunks: a dataset records the test intent, while each run records the retrieval configuration and observed results. This makes a run reproducible enough to compare changes without mutating older evidence.

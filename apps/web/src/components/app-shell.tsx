@@ -57,8 +57,8 @@ export function AppShell({ children }: AppShellProps) {
           </nav>
 
           <div className="border-t border-border px-6 py-5">
-            <p className="text-xs font-medium text-foreground">Milestone 4</p>
-            <p className="mt-1 text-xs leading-5 text-muted">Grounded answers</p>
+            <p className="text-xs font-medium text-foreground">Milestone 6</p>
+            <p className="mt-1 text-xs leading-5 text-muted">Evaluation history</p>
           </div>
         </aside>
 

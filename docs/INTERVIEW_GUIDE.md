@@ -71,6 +71,19 @@ This is the quick-reference version of the interview questions in the learning l
 - How should multiple expected pages affect Recall@k and page-match rate?
 - Why is MRR useful when Recall@k already reports whether retrieval succeeded?
 
+## Milestone 6 — Persistent evaluation datasets
+
+- Why persist a dataset instead of sending cases in every evaluation request?
+- Which owner and document authorization checks belong on dataset creation?
+- Why should each evaluation run be immutable historical data?
+- What retrieval configuration must be stored to compare two runs fairly?
+- Why store per-case retrieved sources as well as aggregate metrics?
+- How should a dataset behave when a referenced document is deleted?
+- Why should run history be scoped through the dataset owner?
+- How would you add embedding-model labels without mixing incompatible vectors?
+- What is the difference between a latest-run summary and a complete run detail?
+- How would trend visualizations help diagnose a regression in Recall@k or MRR?
+
 ## Cross-cutting production questions
 
 - Where are authorization boundaries enforced, and how would you test for cross-owner leaks?
