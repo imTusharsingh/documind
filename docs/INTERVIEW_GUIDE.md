@@ -60,13 +60,16 @@ This is the quick-reference version of the interview questions in the learning l
 - How would you prevent the model from using outside knowledge?
 - What should be persisted for a reproducible answer: messages, citations, latency, and token usage?
 
-## Milestone 5 — Planned evaluation
+## Milestone 5 — Retrieval evaluation
 
 - How should an evaluation dataset represent questions and expected source pages?
 - What is the difference between Recall@k and mean reciprocal rank?
 - How would you compare embedding models without changing production vectors in place?
 - How can citation validity and page-match accuracy be measured separately?
 - Which retrieval failures require better chunking, better embeddings, or better filters?
+- Why is the MVP evaluation endpoint stateless?
+- How should multiple expected pages affect Recall@k and page-match rate?
+- Why is MRR useful when Recall@k already reports whether retrieval succeeded?
 
 ## Cross-cutting production questions
 

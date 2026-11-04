@@ -496,5 +496,39 @@ The provider is isolated behind a protocol, which makes the complete API flow te
 
 ### Next milestone
 
-Milestone 5 will add retrieval evaluation and quality metrics.
+## Milestone 5 — Retrieval evaluation
+
+**Date:** 2026-11-04
+
+### What was built
+
+- Stateless `POST /api/v1/evaluation/run` endpoint
+- Batched question embedding and owner-scoped retrieval reuse
+- Per-case Recall@k, reciprocal rank, exact page-match, and retrieved-source details
+- Aggregate Recall@k, mean reciprocal rank, and page-match rate
+- Evaluation UI for selecting a ready document, expected page, and question
+- Metric and validation tests without network access
+
+### Concepts learned
+
+Recall@k measures how much of the expected source set was retrieved, while reciprocal rank rewards putting the first relevant source near the top. Page-match is intentionally separate: retrieving the right document but the wrong page is useful for diagnosis but should not count as a precise citation hit.
+
+The endpoint is stateless so evaluation can be run against changing retrieval configurations without introducing dataset lifecycle, permissions, or historical-version concerns. The input format is already explicit enough to become a persisted dataset in a later milestone.
+
+### Interview questions
+
+1. What is the difference between Recall@k, MRR, and page-match rate?
+2. Why should expected sources include page numbers rather than only document ids?
+3. Why embed evaluation questions in one batch?
+4. Why reuse the production retrieval query for evaluation instead of copying its SQL?
+5. What does a high Recall@k but low MRR indicate?
+6. Why can a document-level hit still be a page-level failure?
+7. Why is stateless evaluation a good first version?
+8. How would you prevent an evaluation case from referencing another owner's document?
+9. How would you compare two embedding models fairly?
+10. What would you persist in a future evaluation-dataset milestone?
+
+### Next milestone
+
+Milestone 6 will add persistent evaluation datasets and historical quality comparisons.
 

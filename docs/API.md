@@ -163,6 +163,12 @@ Lists the current owner's conversations, newest activity first.
 
 Returns one owner-scoped conversation with user and assistant messages and the validated citations saved with each assistant message. Unknown or cross-owner ids return `404 NOT_FOUND`.
 
+### `POST /api/v1/evaluation/run`
+
+Runs a stateless retrieval evaluation. Each case supplies a question and one or more expected document/page sources. The API embeds all questions in one batch, retrieves ready chunks, and returns per-case results plus aggregate Recall@k, mean reciprocal rank, and page-match rate.
+
+Results are not persisted in the MVP, so an evaluation run is safe to repeat after changing chunking, embeddings, or retrieval settings.
+
 ### Document lifecycle
 
 ```text
@@ -218,4 +224,4 @@ The frontend relies on `error.code`, not on message text, so wording can change 
 
 | Method | Path | Purpose | Milestone |
 | --- | --- | --- | --- |
-| `POST` | `/evaluation/run` | Run retrieval evaluation | 6 |
+| `POST` | `/evaluation/datasets` | Persist reusable evaluation datasets | 6 |

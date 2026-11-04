@@ -1,4 +1,4 @@
-import { FileSearch, FileText, LayoutDashboard, LibraryBig, MessageSquareText } from 'lucide-react';
+import { BarChart3, FileSearch, FileText, LayoutDashboard, LibraryBig, MessageSquareText } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { NavLink } from 'react-router-dom';
 
@@ -13,6 +13,7 @@ const navigation = [
   { to: '/documents', label: 'Documents', icon: FileText, end: false },
   { to: '/search', label: 'Search', icon: FileSearch, end: false },
   { to: '/chat', label: 'Ask', icon: MessageSquareText, end: false },
+  { to: '/evaluation', label: 'Evaluation', icon: BarChart3, end: false },
 ];
 
 export function AppShell({ children }: AppShellProps) {

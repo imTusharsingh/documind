@@ -37,6 +37,13 @@ const milestones = [
     state: 'Available',
     to: '/chat',
   },
+  {
+    title: 'Retrieval evaluation',
+    description: 'Recall@k, MRR, and page-match metrics for question sets.',
+    icon: Database,
+    state: 'Available',
+    to: '/evaluation',
+  },
 ];
 
 export function SystemStatusPage() {

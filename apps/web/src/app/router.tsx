@@ -2,6 +2,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 
 import { AppShell } from '@/components/app-shell';
 import { ChatPage } from './chat-page';
+import { EvaluationPage } from './evaluation-page';
 import { DocumentsPage } from './documents-page';
 import { SearchPage } from './search-page';
 import { SystemStatusPage } from './system-status-page';
@@ -39,6 +40,14 @@ export function AppRouter() {
           element={
             <AppShell>
               <ChatPage />
+            </AppShell>
+          }
+        />
+        <Route
+          path="/evaluation"
+          element={
+            <AppShell>
+              <EvaluationPage />
             </AppShell>
           }
         />

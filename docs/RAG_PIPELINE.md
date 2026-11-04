@@ -61,7 +61,7 @@ Implemented in Milestone 4:
 
 ## Evaluation
 
-The evaluation dataset will contain questions, expected source documents/pages, and retrieval configuration. Initial metrics:
+Milestone 5 implements a stateless evaluation endpoint. A request contains questions, expected source document/page pairs, `top_k`, and a minimum similarity. Initial metrics:
 
 - Recall@k
 - Mean reciprocal rank (MRR)
@@ -69,4 +69,4 @@ The evaluation dataset will contain questions, expected source documents/pages, 
 - Citation page match rate when running answer generation
 - Average latency and token usage
 
-The evaluation endpoint will be stateless for the MVP. Results will be returned to the frontend and can be inspected in the Evaluation page.
+Results are returned to the frontend and can be inspected in the Evaluation page. Persistent datasets and historical comparisons remain future work.

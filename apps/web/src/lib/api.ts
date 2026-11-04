@@ -65,6 +65,31 @@ export interface ChatResponse {
   insufficient_evidence: boolean;
 }
 
+export interface EvaluationSource {
+  chunk_id: string;
+  document_id: string;
+  document_name: string;
+  page_number: number;
+  chunk_index: number;
+  similarity: number;
+}
+
+export interface EvaluationCaseResult {
+  question: string;
+  recall_at_k: number;
+  reciprocal_rank: number;
+  page_match: boolean;
+  retrieved_sources: EvaluationSource[];
+}
+
+export interface EvaluationResponse {
+  case_count: number;
+  recall_at_k: number;
+  mean_reciprocal_rank: number;
+  page_match_rate: number;
+  results: EvaluationCaseResult[];
+}
+
 interface ErrorEnvelope {
   error: {
     code: string;
@@ -216,4 +241,28 @@ export async function askQuestion(
   }
 
   return (await response.json()) as ChatResponse;
+}
+
+export async function runEvaluation(
+  question: string,
+  documentId: string,
+  pageNumber: number,
+): Promise<EvaluationResponse> {
+  const response = await fetch('/api/v1/evaluation/run', {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      cases: [{ question, expected_sources: [{ document_id: documentId, page_number: pageNumber }] }],
+      top_k: 5,
+    }),
+  });
+
+  if (!response.ok) {
+    throw await toApiError(response);
+  }
+
+  return (await response.json()) as EvaluationResponse;
 }

@@ -2,9 +2,9 @@
 
 DocuMind is an AI-powered document research assistant. This repository is being built incrementally as a learning project covering FastAPI, PostgreSQL, pgvector, RAG, Docker, and production-quality frontend engineering.
 
-**Current status:** Milestone 4 complete — grounded answers with citations.
+**Current status:** Milestone 5 complete — retrieval evaluation.
 
-![DocuMind Milestone 4](docs/screenshots/milestone-4.png)
+![DocuMind Milestone 5](docs/screenshots/milestone-5.png)
 
 ## What works today
 
@@ -25,6 +25,7 @@ DocuMind is an AI-powered document research assistant. This repository is being 
 - Semantic search API and UI with owner, readiness, document, and similarity filters
 - Reprocess endpoint for failed documents and existing documents after embedding changes
 - Grounded chat answers with persisted conversations, source previews, and validated citations
+- Stateless retrieval evaluation with Recall@k, MRR, and page-match metrics
 - Docker Compose for the web app, API, worker, and database, with health checks
 - **Rstest** + React Testing Library component tests
 - Pytest integration tests against a real PostgreSQL database
@@ -53,6 +54,7 @@ FastAPI
   +-- /api/v1/search        semantic search over ready chunks
   +-- /api/v1/chat          grounded answers with validated citations
   +-- /api/v1/conversations conversation history and source citations
+  +-- /api/v1/evaluation/run retrieval evaluation metrics
   |
   +-----------------------------+
   v                             v
@@ -185,9 +187,9 @@ documind/
 - One document owner, seeded by migration `0002`.
 - Text-based PDFs only; scanned PDFs fail with an explicit message because OCR is not included.
 - Chunking uses `cl100k_base`, 350 tokens with 50 tokens of overlap, never crossing page boundaries.
-- No evaluation dataset or automated retrieval evaluation yet.
+- Evaluation runs are stateless; persistent dataset management is not implemented yet.
 - No secrets are present in the frontend. The OpenAI key belongs in the backend `.env` only.
 
 ## Next milestone
 
-Milestone 5 will add retrieval evaluation and quality metrics.
+Milestone 6 will add persistent evaluation datasets and broader quality reporting.
