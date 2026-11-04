@@ -1,23 +1,32 @@
 # RAG pipeline
 
-This document describes the pipeline that will be implemented in Milestones 2–4. Nothing below is implemented yet beyond the empty infrastructure.
+This document describes the full retrieval-augmented generation pipeline. Milestone 2 implements upload, storage, extraction, chunking, and ingestion status. Embedding, retrieval, and answer generation remain future work, and this document marks the boundary explicitly.
 
 ## Ingestion
 
-1. Validate the uploaded PDF.
-2. Store the original file on a persistent upload volume.
-3. Create a document row with status `pending`.
-4. The worker claims the row and sets status `processing`.
+Implemented in Milestone 2:
+
+1. Validate the uploaded file name, PDF signature, and size while streaming it to disk.
+2. Store the original file on the persistent uploads volume under a server-generated document id.
+3. Create a `documents` row with status `pending`.
+4. The worker claims the row atomically and sets status `processing`.
 5. Extract text page by page with PyMuPDF.
 6. If no extractable text exists, fail with an explicit message explaining that scanned PDFs are not supported.
-7. Split each page into fixed-size token chunks with overlap.
-8. Generate embeddings in batches.
-9. Store chunks, page numbers, token counts, metadata, and vectors.
-10. Set the document status to `ready`.
+7. Split each page into overlapping token windows with `tiktoken` (`cl100k_base`, 350 tokens, 50 overlap).
+8. Store chunks with page number, sequential chunk index, content, and token count.
+9. Set the document status to `ready` with `page_count` and `chunk_count` in the same transaction.
+
+Pending in Milestone 3:
+
+10. Generate embeddings in batches with the configured provider.
+11. Store vectors alongside each chunk and add a pgvector index.
+12. Extend readiness or failure handling so a document is only `ready` when its vectors exist.
 
 Chunking within page boundaries keeps citations precise. Cross-page chunks may be evaluated later if retrieval quality requires them.
 
 ## Question answering
+
+Planned for Milestone 4:
 
 1. Receive the question and optional document selection.
 2. Resolve the conversation and owner.
@@ -41,6 +50,7 @@ Chunking within page boundaries keeps citations precise. Cross-page chunks may b
 - Owner filtering happens in the database query.
 - Citations are validated by application code, not trusted from the model.
 - The answer must not use outside knowledge when the documents do not support it.
+- Ingestion progress is durable because status lives in PostgreSQL, not in process memory.
 
 ## Evaluation
 

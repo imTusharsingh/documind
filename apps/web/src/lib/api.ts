@@ -19,6 +19,21 @@ export interface OwnerResponse {
   created_at: string;
 }
 
+export type DocumentStatus = 'pending' | 'processing' | 'ready' | 'failed';
+
+export interface DocumentResponse {
+  id: string;
+  original_filename: string;
+  content_type: string;
+  size_bytes: number;
+  status: DocumentStatus;
+  page_count: number | null;
+  chunk_count: number | null;
+  error_message: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 interface ErrorEnvelope {
   error: {
     code: string;
@@ -84,4 +99,52 @@ export async function fetchOwner(signal?: AbortSignal): Promise<OwnerResponse> {
   }
 
   return (await response.json()) as OwnerResponse;
+}
+
+export async function fetchDocuments(signal?: AbortSignal): Promise<DocumentResponse[]> {
+  const response = await fetch('/api/v1/documents', {
+    method: 'GET',
+    headers: {
+      Accept: 'application/json',
+    },
+    signal,
+  });
+
+  if (!response.ok) {
+    throw await toApiError(response);
+  }
+
+  return (await response.json()) as DocumentResponse[];
+}
+
+export async function uploadDocument(file: File): Promise<DocumentResponse> {
+  const body = new FormData();
+  body.append('file', file);
+
+  const response = await fetch('/api/v1/documents', {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+    },
+    body,
+  });
+
+  if (!response.ok) {
+    throw await toApiError(response);
+  }
+
+  return (await response.json()) as DocumentResponse;
+}
+
+export async function deleteDocument(documentId: string): Promise<void> {
+  const response = await fetch(`/api/v1/documents/${encodeURIComponent(documentId)}`, {
+    method: 'DELETE',
+    headers: {
+      Accept: 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    throw await toApiError(response);
+  }
 }

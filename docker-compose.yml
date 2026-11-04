@@ -64,6 +64,25 @@ services:
       retries: 5
       start_period: 10s
 
+  worker:
+    build:
+      context: ./services/api
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      DOCUMIND_ENVIRONMENT: development
+      PYTHONUNBUFFERED: "1"
+      PYTHONDONTWRITEBYTECODE: "1"
+    command: ["python", "-m", "app.workers.ingest"]
+    volumes:
+      - ./services/api/app:/app/app
+      - uploads:/data/uploads
+    depends_on:
+      api:
+        condition: service_healthy
+
   web:
     build:
       context: ./apps/web

@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import {
+  ArrowRight,
   ArrowUpRight,
   Check,
   Database,
@@ -9,25 +10,30 @@ import {
   Sparkles,
   UserRound,
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 import { StatusIndicator, type Status } from '@/components/status-indicator';
 import { fetchHealth, fetchOwner } from '@/lib/api';
 
-const nextMilestones = [
+const milestones = [
   {
     title: 'Document ingestion',
     description: 'PDF upload, page-aware extraction, chunking, and ingestion status.',
     icon: FileText,
+    state: 'Available',
+    to: '/documents',
   },
   {
     title: 'Embeddings and retrieval',
     description: 'pgvector storage and semantic search over document chunks.',
     icon: Database,
+    state: 'Next',
   },
   {
     title: 'Grounded answers',
     description: 'RAG responses with validated page citations and source previews.',
     icon: Sparkles,
+    state: 'Planned',
   },
 ];
 
@@ -79,16 +85,26 @@ export function SystemStatusPage() {
 
   return (
     <div className="space-y-6">
-      <header>
-        <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1 text-xs font-medium text-muted">
-          <span className="size-1.5 rounded-full bg-primary" aria-hidden="true" />
-          Milestone 1
+      <header className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1 text-xs font-medium text-muted">
+            <span className="size-1.5 rounded-full bg-primary" aria-hidden="true" />
+            Milestone 2
+          </div>
+          <h1 className="text-2xl font-semibold leading-8 tracking-[-0.02em]">System readiness</h1>
+          <p className="mt-1 max-w-2xl text-sm leading-[22px] text-muted">
+            DocuMind is running locally. This screen verifies the web application, the API, and its
+            PostgreSQL connection alongside the document ingestion pipeline.
+          </p>
         </div>
-        <h1 className="text-2xl font-semibold leading-8 tracking-[-0.02em]">System readiness</h1>
-        <p className="mt-1 max-w-2xl text-sm leading-[22px] text-muted">
-          DocuMind is running locally. This screen verifies the web application, the API, and its
-          PostgreSQL connection before product features are added.
-        </p>
+
+        <Link
+          to="/documents"
+          className="inline-flex h-9 items-center gap-1.5 rounded-md bg-primary px-3 text-xs font-medium text-white transition-colors hover:bg-primary-hover"
+        >
+          Manage documents
+          <ArrowRight aria-hidden="true" size={13} />
+        </Link>
       </header>
 
       <section className="grid gap-4 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
@@ -210,6 +226,17 @@ export function SystemStatusPage() {
                 <Check aria-hidden="true" size={12} strokeWidth={2.5} />
               </span>
               <div>
+                <p className="text-sm font-medium">Ingestion worker</p>
+                <p className="mt-0.5 text-xs leading-5 text-muted">
+                  Separate process that claims pending documents from PostgreSQL
+                </p>
+              </div>
+            </li>
+            <li className="flex items-start gap-3">
+              <span className="mt-0.5 flex size-5 items-center justify-center rounded-full bg-success/10 text-success">
+                <Check aria-hidden="true" size={12} strokeWidth={2.5} />
+              </span>
+              <div>
                 <p className="text-sm font-medium">PostgreSQL + pgvector</p>
                 <p className="mt-0.5 text-xs leading-5 text-muted">
                   Schema managed by Alembic, applied when the API starts
@@ -282,17 +309,17 @@ export function SystemStatusPage() {
       </section>
 
       <section className="rounded-lg border border-border bg-surface p-6">
-        <h2 className="text-lg font-semibold leading-7">What comes next</h2>
+        <h2 className="text-lg font-semibold leading-7">Build progress</h2>
         <p className="mt-1 text-sm leading-[22px] text-muted">
-          Product functionality is intentionally deferred until the data foundation is verified.
+          Document ingestion is available now. Retrieval and grounded answers build on the stored
+          chunks.
         </p>
 
         <div className="mt-5 grid gap-3 md:grid-cols-3">
-          {nextMilestones.map((milestone, index) => {
+          {milestones.map((milestone, index) => {
             const Icon = milestone.icon;
-
-            return (
-              <div key={milestone.title} className="rounded-md border border-border bg-background p-4">
+            const content = (
+              <>
                 <div className="flex items-center justify-between">
                   <Icon aria-hidden="true" size={16} className="text-muted" />
                   <span className="font-mono text-[11px] text-muted">
@@ -301,6 +328,23 @@ export function SystemStatusPage() {
                 </div>
                 <p className="mt-4 text-sm font-medium">{milestone.title}</p>
                 <p className="mt-1 text-xs leading-5 text-muted">{milestone.description}</p>
+                <p className="mt-3 text-[11px] font-medium uppercase tracking-wide text-muted">
+                  {milestone.state}
+                </p>
+              </>
+            );
+
+            return milestone.to ? (
+              <Link
+                key={milestone.title}
+                to={milestone.to}
+                className="rounded-md border border-primary/30 bg-citation p-4 transition-colors hover:border-primary/50"
+              >
+                {content}
+              </Link>
+            ) : (
+              <div key={milestone.title} className="rounded-md border border-border bg-background p-4">
+                {content}
               </div>
             );
           })}

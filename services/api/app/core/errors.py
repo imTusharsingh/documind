@@ -58,6 +58,18 @@ class ServiceUnavailableError(AppError):
     message = "A required dependency is unavailable."
 
 
+class PayloadTooLargeError(AppError):
+    status_code = 413
+    code = "PAYLOAD_TOO_LARGE"
+    message = "The uploaded file is too large."
+
+
+class UnsupportedMediaTypeError(AppError):
+    status_code = 415
+    code = "UNSUPPORTED_MEDIA_TYPE"
+    message = "The uploaded file type is not supported."
+
+
 def _error_response(
     status_code: int,
     code: str,

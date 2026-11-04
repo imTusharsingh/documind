@@ -27,6 +27,21 @@ class Settings(BaseSettings):
     db_max_overflow: int = 10
     db_connect_timeout: int = 3
 
+    upload_dir: str = Field(
+        default="data/uploads",
+        validation_alias=AliasChoices("UPLOAD_DIR", "DOCUMIND_UPLOAD_DIR"),
+    )
+    max_upload_mb: int = Field(
+        default=25,
+        validation_alias=AliasChoices("MAX_UPLOAD_MB", "DOCUMIND_MAX_UPLOAD_MB"),
+    )
+
+    chunk_tokens: int = 350
+    chunk_overlap_tokens: int = 50
+
+    worker_poll_seconds: float = 1.0
+    worker_stale_after_seconds: int = 300
+
     model_config = SettingsConfigDict(
         env_prefix="DOCUMIND_",
         env_file=".env",
@@ -38,6 +53,11 @@ class Settings(BaseSettings):
     def cors_origin_list(self) -> list[str]:
         """Return CORS origins as a clean list."""
         return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]
+
+    @property
+    def max_upload_bytes(self) -> int:
+        """Maximum accepted upload size in bytes."""
+        return self.max_upload_mb * 1024 * 1024
 
 
 @lru_cache

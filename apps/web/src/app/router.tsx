@@ -1,6 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 
 import { AppShell } from '@/components/app-shell';
+import { DocumentsPage } from './documents-page';
 import { SystemStatusPage } from './system-status-page';
 
 export function AppRouter() {
@@ -12,6 +13,14 @@ export function AppRouter() {
           element={
             <AppShell>
               <SystemStatusPage />
+            </AppShell>
+          }
+        />
+        <Route
+          path="/documents"
+          element={
+            <AppShell>
+              <DocumentsPage />
             </AppShell>
           }
         />

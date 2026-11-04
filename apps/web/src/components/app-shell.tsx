@@ -1,10 +1,17 @@
-import { LayoutDashboard, LibraryBig } from 'lucide-react';
+import { FileText, LayoutDashboard, LibraryBig } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { Link } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
+
+import { cn } from '@/lib/utils';
 
 interface AppShellProps {
   children: ReactNode;
 }
+
+const navigation = [
+  { to: '/', label: 'Overview', icon: LayoutDashboard, end: true },
+  { to: '/documents', label: 'Documents', icon: FileText, end: false },
+];
 
 export function AppShell({ children }: AppShellProps) {
   return (
@@ -21,29 +28,69 @@ export function AppShell({ children }: AppShellProps) {
             </div>
           </div>
 
-          <nav aria-label="Primary" className="flex-1 px-3 py-4">
-            <Link
-              to="/"
-              aria-current="page"
-              className="flex h-9 items-center gap-2.5 rounded-md bg-citation px-3 text-sm font-medium text-primary"
-            >
-              <LayoutDashboard aria-hidden="true" size={16} strokeWidth={2} />
-              Overview
-            </Link>
+          <nav aria-label="Primary" className="flex-1 space-y-1 px-3 py-4">
+            {navigation.map((item) => {
+              const Icon = item.icon;
+
+              return (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  end={item.end}
+                  className={({ isActive }) =>
+                    cn(
+                      'flex h-9 items-center gap-2.5 rounded-md px-3 text-sm font-medium transition-colors',
+                      isActive
+                        ? 'bg-citation text-primary'
+                        : 'text-muted hover:bg-background hover:text-foreground',
+                    )
+                  }
+                >
+                  <Icon aria-hidden="true" size={16} strokeWidth={2} />
+                  {item.label}
+                </NavLink>
+              );
+            })}
           </nav>
 
           <div className="border-t border-border px-6 py-5">
-            <p className="text-xs font-medium text-foreground">Milestone 1</p>
-            <p className="mt-1 text-xs leading-5 text-muted">Data foundation</p>
+            <p className="text-xs font-medium text-foreground">Milestone 2</p>
+            <p className="mt-1 text-xs leading-5 text-muted">Document ingestion</p>
           </div>
         </aside>
 
         <main className="min-w-0 flex-1">
-          <header className="flex h-16 items-center gap-3 border-b border-border bg-surface px-6 md:hidden">
-            <div className="flex size-8 items-center justify-center rounded-md bg-primary text-white">
-              <LibraryBig aria-hidden="true" size={17} strokeWidth={2} />
+          <header className="border-b border-border bg-surface px-6 md:hidden">
+            <div className="flex h-16 items-center gap-3">
+              <div className="flex size-8 items-center justify-center rounded-md bg-primary text-white">
+                <LibraryBig aria-hidden="true" size={17} strokeWidth={2} />
+              </div>
+              <p className="text-sm font-semibold tracking-tight">DocuMind</p>
             </div>
-            <p className="text-sm font-semibold tracking-tight">DocuMind</p>
+            <nav aria-label="Primary" className="-mx-1 flex gap-1 overflow-x-auto pb-2">
+              {navigation.map((item) => {
+                const Icon = item.icon;
+
+                return (
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    end={item.end}
+                    className={({ isActive }) =>
+                      cn(
+                        'flex h-8 shrink-0 items-center gap-2 rounded-md px-3 text-xs font-medium transition-colors',
+                        isActive
+                          ? 'bg-citation text-primary'
+                          : 'text-muted hover:bg-background hover:text-foreground',
+                      )
+                    }
+                  >
+                    <Icon aria-hidden="true" size={14} strokeWidth={2} />
+                    {item.label}
+                  </NavLink>
+                );
+              })}
+            </nav>
           </header>
 
           <div className="mx-auto w-full max-w-[1200px] px-6 py-8 md:px-8">{children}</div>

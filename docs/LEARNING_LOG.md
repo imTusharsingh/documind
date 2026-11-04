@@ -259,3 +259,162 @@ Observed results:
 
 Milestone 2 adds PDF upload, durable file storage, page-aware extraction, chunking, and the PostgreSQL-backed ingestion queue with document status.
 
+---
+
+## Milestone 2 — Document ingestion
+
+**Date:** 2026-11-04
+
+### What was built
+
+- `documents` and `document_chunks` tables with migration `0003`
+- A status check constraint and a `(status, created_at)` index for worker claims
+- Streaming PDF upload with extension, signature, and size validation
+- Durable storage keyed by server-generated document id
+- Page-aware text extraction with PyMuPDF
+- Token chunking with `tiktoken` (`cl100k_base`, 350 tokens, 50 overlap)
+- A separate PostgreSQL-backed ingestion worker using `FOR UPDATE SKIP LOCKED`
+- Stale-claim recovery and idempotent chunk replacement
+- `POST`, `GET`, `GET /{id}`, and `DELETE /documents` routes
+- A documents page with upload, status badges, automatic polling, and delete
+- Sidebar navigation and a documents entry point from the system page
+- 41 backend tests and 15 frontend tests
+
+### Concepts learned
+
+**The table is the queue**
+
+The MVP does not add Redis or Celery. A document row already has durable state, an owner, timestamps, and a natural lifecycle. Polling that table and using status transitions as the protocol means a worker restart loses nothing: pending work is still pending, and finished work is still finished. A broker becomes justified when fan-out, priorities, or scheduled retries cannot be expressed reasonably in SQL.
+
+**`FOR UPDATE SKIP LOCKED`**
+
+Two workers polling at the same time must not receive the same document. `SKIP LOCKED` tells PostgreSQL to ignore rows another transaction has locked instead of waiting on them. Combining it with a single `UPDATE ... RETURNING` makes claiming one atomic step. Without `SKIP LOCKED`, workers serialize behind each other; without the row lock, both can claim the same row.
+
+**Commit the claim, then work**
+
+The claim transaction commits before PDF extraction. Holding a row lock for seconds of parsing would block every other worker and keep a connection idle. The trade-off is that a crash can leave a row in `processing`, which is why the stale timestamp exists. A worker may reclaim a claim older than the threshold, and replays are safe.
+
+**Idempotent retries**
+
+A worker can die after writing some chunks but before marking the document ready. On retry, `replace_chunks` deletes all chunks for that document before inserting the new set. The unique constraint on `(document_id, chunk_index)` is a second line of defence. Retry safety is a property of the write sequence, not a hope.
+
+**Streaming uploads**
+
+Reading the entire upload into memory would let one large file exhaust the API. The handler writes chunks of 1 MB, counts bytes as they arrive, and rejects the upload while writing. The client's `Content-Length` header is not trusted because it can lie. The file is written as `.part` and renamed only on success, so a rejected upload never leaves a file that looks valid.
+
+**Magic bytes versus extensions**
+
+A `.pdf` extension proves nothing. The handler checks for `%PDF-` near the start of the file, then PyMuPDF validates whether the structure is readable. Both checks are needed: the signature rejects obvious mistakes cheaply, while parsing is the real test.
+
+**Server-generated storage paths**
+
+The stored filename is `{document_id}.pdf`, not the client filename. A name such as `../../passwd.pdf` becomes harmless because it never reaches the path. The original name is kept only as metadata for display.
+
+**Page boundaries make citations possible**
+
+Chunks never span pages. Page numbers are 1-based and stored on every chunk. This slightly reduces retrieval quality at boundaries but guarantees that a citation can name one page. Citation precision is a product requirement, so the constraint belongs in the chunker and in its tests.
+
+**Token windows, not character windows**
+
+`tiktoken` with `cl100k_base` measures the units the embedding model actually sees. A 350-token window with 50-token overlap advances 300 tokens per chunk, so adjacent chunks share 50 tokens of context. Token counts are stored rather than recomputed later. Character splitting would produce wildly uneven tokens and misleading counts.
+
+**Expected failure versus crash**
+
+A scanned PDF is an expected failure: the user can fix it, so the message is user-facing and stored on the document. An unexpected exception is a bug: the document gets a generic message and the worker log keeps the traceback. The API never returns internal exception text.
+
+**Worker process topology**
+
+The worker is a second process with its own engine and session factory. It shares the API image and the uploads volume but not memory. This is why the API cannot pass Python objects to the worker — the file path and document id in PostgreSQL are the only handoff. It also means the worker can be scaled or restarted independently.
+
+**Polling in the UI**
+
+TanStack Query polls only while at least one document is `pending` or `processing`. Once everything is terminal, `refetchInterval` returns `false` and polling stops. That avoids a permanent background request loop while keeping status fresh during work.
+
+**Mutation-driven cache invalidation**
+
+After upload or delete, the mutation invalidates the `['documents']` query instead of manually splicing the list. The next fetch is the source of truth, so the UI cannot drift from the server after a failed write.
+
+### Execution flow
+
+1. The browser submits `POST /api/v1/documents` with a multipart PDF.
+2. FastAPI validates the filename, streams the file to the uploads volume, and checks the PDF signature and size.
+3. The API inserts a `documents` row with status `pending` and returns `201`.
+4. The documents page inserts the response into its TanStack Query cache and starts polling every 2 seconds.
+5. The worker polls PostgreSQL, claims the row atomically, and commits it as `processing`.
+6. The worker reads the stored path, extracts page text, and chunks each page.
+7. It replaces any previous chunks and marks the document `ready` with page and chunk counts.
+8. The next poll returns `ready`; the UI shows both counts and stops polling.
+9. If extraction finds no text, the worker marks the document `failed` with an explicit message; the UI shows it in the row.
+
+### Verification performed
+
+```bash
+cd services/api
+.venv/bin/ruff check .
+.venv/bin/ruff format --check .
+.venv/bin/pytest -q
+
+cd apps/web
+pnpm typecheck
+pnpm test
+pnpm build
+
+cd ../..
+docker compose up --build -d
+docker compose ps
+curl -F 'file=@ingestion-sample.pdf;type=application/pdf' \
+  http://localhost:5173/api/v1/documents
+curl http://localhost:5173/api/v1/documents/<id>
+docker compose exec -T db psql -U documind -d documind -c \
+  "SELECT page_number, chunk_index, token_count, left(content, 60) FROM document_chunks ORDER BY chunk_index;"
+curl -X DELETE http://localhost:5173/api/v1/documents/<id>
+curl -F 'file=@notes.txt;type=text/plain' http://localhost:5173/api/v1/documents
+```
+
+Observed results:
+
+- 41 backend tests and 15 frontend tests passed; typecheck and production build succeeded.
+- `api`, `db`, `web`, and `worker` started; the API and web containers became healthy.
+- A three-page PDF uploaded through the web proxy returned `201 pending`.
+- Polling showed `processing`, then `ready` with `page_count = 3` and `chunk_count = 3`.
+- Stored chunks had page numbers 1, 2, and 3, sequential indexes, and token counts of 26, 26, and 28.
+- A text-free PDF became `failed` with "This PDF has no extractable text. Scanned PDFs are not supported."
+- Deleting the failed document returned `204`, a follow-up `GET` returned `404`, and its file disappeared from the uploads volume.
+- Uploading a `.txt` returned `415 UNSUPPORTED_MEDIA_TYPE`.
+- The rendered documents page contained both filenames, two `Ready` badges, the upload form, and the library heading, with no browser console errors.
+- Screenshot captured at `docs/screenshots/milestone-2.png`.
+
+### Common failure cases
+
+- **`RuntimeError: Form data requires "python-multipart"`:** the API image was built before the dependency was added. Rebuild with `docker compose up --build -d`.
+- **Document stays `pending`:** the worker is not running or cannot reach PostgreSQL. Check `docker compose ps` and `docker compose logs worker`.
+- **Document stays `processing` forever:** the worker crashed after claiming. It becomes reclaimable after `DOCUMIND_WORKER_STALE_AFTER_SECONDS` (default 300).
+- **`413` on a file below the limit:** `MAX_UPLOAD_MB` is applied to bytes streamed, not to the reported size. Check the actual file size and the `.env` value.
+- **`415` for a valid-looking PDF:** the first 1 KB must contain `%PDF-`, and PyMuPDF must be able to open the file. Some exporters produce unusual headers or encrypted files.
+- **Worker cannot find the file:** the API and worker must mount the same `uploads` volume, and `UPLOAD_DIR` must match in both containers.
+- **Failed chunks remain after a retry:** this should not happen because `replace_chunks` deletes first. If it does, check that the reclaim path and the claim use the same document id.
+- **Alembic constraint name has a double prefix:** the project naming convention prefixes explicit names too. Use a bare name such as `name="document_status"` and expect `ck_documents_document_status` in the database. This happened during development.
+- **`pymupdf 2.x` pulls heavy extras:** `pymupdf-layout` and `pymupdf4llm` bring ONNX runtime. The project pins `pymupdf>=1.28,<2` because only the base parser is needed.
+
+### Interview questions
+
+1. Why can the `documents` table act as a durable queue, and when would you replace it with a broker?
+2. How does `FOR UPDATE SKIP LOCKED` prevent two workers from claiming the same row?
+3. Why does the worker commit the claim before extraction instead of holding the lock for the whole job?
+4. What happens if a worker crashes between writing chunks and marking the document ready, and why is a retry safe?
+5. Why is a stale `processing` timestamp necessary if the claim is atomic?
+6. Why stream an upload in chunks instead of reading it all into memory before checking the size?
+7. Why is checking the `%PDF-` signature not enough to trust a file?
+8. Why derive the storage path from the document id instead of sanitizing and using the client filename?
+9. Why do chunks never cross page boundaries, and what retrieval quality trade-off does that make?
+10. What does the 50-token overlap buy, and why must the overlap be smaller than the window?
+11. Why store `token_count` instead of counting words or characters at read time?
+12. Why does the worker record expected failures on the document while logging unexpected ones with a traceback?
+13. How does TanStack Query stop polling once every document reaches a terminal state?
+14. Why invalidate the documents query after a mutation instead of updating the cached list by hand?
+15. What changes if two workers, then ten, run against the same table?
+
+### Next milestone
+
+Milestone 3 adds embeddings, pgvector storage, and semantic search over document chunks.
+

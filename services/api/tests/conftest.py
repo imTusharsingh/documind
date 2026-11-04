@@ -10,9 +10,10 @@ rolled back afterwards so tests cannot leak state into each other.
 """
 
 import os
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from pathlib import Path
 
+import pymupdf
 import pytest
 from alembic import command
 from alembic.config import Config
@@ -33,6 +34,7 @@ TEST_DATABASE_URL = os.environ.setdefault(
     "DATABASE_URL", os.getenv("DOCUMIND_TEST_DATABASE_URL", DEFAULT_TEST_DATABASE_URL)
 )
 
+from app.core.config import Settings, get_settings  # noqa: E402
 from app.core.db import get_session  # noqa: E402
 from app.main import create_app  # noqa: E402
 
@@ -103,11 +105,48 @@ def session(engine: Engine) -> Iterator[Session]:
 
 
 @pytest.fixture
-def client(session: Session) -> Iterator[TestClient]:
+def test_settings(tmp_path: Path) -> Settings:
+    """Settings pointed at a throwaway upload directory.
+
+    The size limit is lowered to 1 MB so the rejection path can be tested
+    without generating a large document.
+    """
+    return get_settings().model_copy(
+        update={
+            "upload_dir": str(tmp_path / "uploads"),
+            "max_upload_mb": 1,
+        }
+    )
+
+
+@pytest.fixture
+def client(session: Session, test_settings: Settings) -> Iterator[TestClient]:
     app = create_app()
     app.dependency_overrides[get_session] = lambda: session
+    app.dependency_overrides[get_settings] = lambda: test_settings
 
     with TestClient(app) as test_client:
         yield test_client
 
     app.dependency_overrides.clear()
+
+
+@pytest.fixture
+def pdf_factory() -> Callable[[Path, list[str]], Path]:
+    """Create a real PDF with one page per provided string."""
+
+    def _make(path: Path, pages: list[str]) -> Path:
+        document = pymupdf.open()
+        for body in pages:
+            page = document.new_page()
+            if body:
+                page.insert_textbox(
+                    pymupdf.Rect(72, 72, 523, 770),
+                    body,
+                    fontsize=11,
+                )
+        document.save(path)
+        document.close()
+        return path
+
+    return _make

@@ -2,9 +2,9 @@
 
 DocuMind is an AI-powered document research assistant. This repository is being built incrementally as a learning project covering FastAPI, PostgreSQL, pgvector, RAG, Docker, and production-quality frontend engineering.
 
-**Current status:** Milestone 1 complete — data foundation.
+**Current status:** Milestone 2 complete — document ingestion.
 
-![DocuMind Milestone 1](docs/screenshots/milestone-1.png)
+![DocuMind Milestone 2](docs/screenshots/milestone-2.png)
 
 ## What works today
 
@@ -17,12 +17,16 @@ DocuMind is an AI-powered document research assistant. This repository is being 
 - PostgreSQL 16 with the **pgvector 0.8.3** extension enabled
 - A single seeded development owner, read through `GET /api/v1/me`
 - One consistent error envelope for every API failure
-- Docker Compose for the web app, API, and database, with health checks
+- PDF upload with streaming size limits, signature checks, and safe filenames
+- A **PostgreSQL-backed ingestion worker** using `FOR UPDATE SKIP LOCKED`
+- Page-aware text extraction with PyMuPDF and token chunking with `tiktoken`
+- Document status UI with automatic polling while ingestion is running
+- Docker Compose for the web app, API, worker, and database, with health checks
 - **Rstest** + React Testing Library component tests
 - Pytest integration tests against a real PostgreSQL database
 - Ruff and TypeScript checks
 
-Document upload, retrieval, and RAG are intentionally not implemented yet.
+Embeddings, retrieval, and RAG are intentionally not implemented yet.
 
 ## Architecture
 
@@ -40,17 +44,25 @@ FastAPI
   +-- /api/v1/health        readiness, checks PostgreSQL
   +-- /api/v1/health/live   liveness, checks nothing
   +-- /api/v1/me            seeded development owner
+  +-- /api/v1/documents     upload, list, get, delete
   |
-  v
-SQLAlchemy 2 (synchronous) + Psycopg 3
-  |
-  v
-PostgreSQL 16 + pgvector
-  +-- users
+  +-----------------------------+
+  v                             v
+SQLAlchemy 2 + Psycopg 3     Ingestion worker
+  |                             |  claims pending documents
+  v                             |  extracts and chunks PDFs
+PostgreSQL 16 + pgvector        |
+  +-- users                     |
+  +-- documents  <--------------+
+  +-- document_chunks
   +-- alembic_version
+
+Uploaded files -> shared uploads volume (read by the API and worker)
 ```
 
 The browser calls relative `/api/v1/*` URLs. In development, Rsbuild proxies those requests to the API container. This avoids exposing API keys to the frontend and keeps the browser origin consistent.
+
+The documents table is the ingestion queue. A worker claims one row at a time, changes its status to `processing`, extracts text, stores chunks, and marks it `ready` or `failed`. Status transitions are the protocol, so no Redis or Celery is required.
 
 ## Quick start
 
@@ -139,19 +151,21 @@ pnpm build
 ```text
 documind/
   apps/web/                React application
-    src/app/               Router, providers, system status page
+    src/app/               Router, providers, system status and documents pages
     src/components/        Shared UI components
     src/lib/               API client and utilities
     src/styles/            Tailwind entry point and design tokens
     tests/                 Rstest setup, component and client tests
   services/api/            FastAPI application
-    app/api/v1/            Versioned routes
+    app/api/v1/            Versioned routes and shared dependencies
     app/core/              Settings, database engine, error handling
     app/models/            SQLAlchemy models
-    app/repositories/      Focused query functions
+    app/repositories/      Focused query functions and the worker claim
     app/schemas/           Pydantic request and response models
+    app/services/          Storage, extraction, chunking, ingestion
+    app/workers/           PostgreSQL-backed ingestion worker
     migrations/            Alembic environment and versions
-    tests/                 API and migration tests
+    tests/                 API, service, worker, and migration tests
   infra/postgres/          PostgreSQL initialization
   docs/                    Architecture, API, RAG, and learning notes
   docker-compose.yml       Local development services
@@ -161,11 +175,11 @@ documind/
 
 - Single local user; authentication is not implemented.
 - One document owner, seeded by migration `0002`.
-- No PDF upload, chunking, embedding, retrieval, or chat.
-- No vector columns or indexes yet; pgvector is installed and ready.
-- Scanned PDFs will not be supported in the MVP unless OCR is explicitly added later.
+- Text-based PDFs only; scanned PDFs fail with an explicit message because OCR is not included.
+- Chunking uses `cl100k_base`, 350 tokens with 50 tokens of overlap, never crossing page boundaries.
+- No embeddings, vector columns, retrieval, chat, or evaluation yet.
 - No secrets are present in the frontend. The OpenAI key belongs in the backend `.env` only.
 
 ## Next milestone
 
-Milestone 2 will add PDF upload, durable storage, page-aware text extraction, chunking, and the ingestion queue with visible document status.
+Milestone 3 will add embeddings, pgvector storage, and semantic search over document chunks.

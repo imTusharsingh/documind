@@ -69,6 +69,66 @@ Returns the workspace owner. Until authentication exists, this is the single dev
 
 If the owner row is missing, the API returns `500` with code `DEVELOPMENT_OWNER_MISSING` and a message naming the fix. That is deliberate: a missing seed is a deployment mistake, not a client error.
 
+### `POST /api/v1/documents`
+
+Uploads a PDF as `multipart/form-data`. The field name is `file`.
+
+```bash
+curl -F 'file=@report.pdf;type=application/pdf' http://localhost:8000/api/v1/documents
+```
+
+**Success:** `201 Created`
+
+```json
+{
+  "id": "68610ec0-76ce-491e-9af7-8e03719b63a4",
+  "original_filename": "report.pdf",
+  "content_type": "application/pdf",
+  "size_bytes": 1914,
+  "status": "pending",
+  "page_count": null,
+  "chunk_count": null,
+  "error_message": null,
+  "created_at": "2026-11-04T04:31:02.933351Z",
+  "updated_at": "2026-11-04T04:31:02.933351Z"
+}
+```
+
+The response is created before ingestion runs, so `status` starts as `pending` and the counts are `null`. A background worker processes the document.
+
+Upload-specific failures keep the shared envelope:
+
+- `413 PAYLOAD_TOO_LARGE` when the stream exceeds `MAX_UPLOAD_MB`.
+- `415 UNSUPPORTED_MEDIA_TYPE` when the filename is not a `.pdf` or the content does not start with `%PDF-`.
+- `422 VALIDATION_ERROR` when the multipart field is missing.
+
+### `GET /api/v1/documents`
+
+Returns the owner's documents, newest first. An optional `status` query parameter filters by `pending`, `processing`, `ready`, or `failed`.
+
+```bash
+curl 'http://localhost:8000/api/v1/documents?status=ready'
+```
+
+An unknown status value returns `422 VALIDATION_ERROR`.
+
+### `GET /api/v1/documents/{document_id}`
+
+Returns one document in the same shape as the upload response. Unknown ids return `404 NOT_FOUND`; malformed UUIDs return `422 VALIDATION_ERROR`. This is the endpoint the UI polls while ingestion is running.
+
+### `DELETE /api/v1/documents/{document_id}`
+
+Deletes the document row, cascades to its chunks, and removes the stored PDF. Returns `204 No Content`. Unknown ids return `404 NOT_FOUND`.
+
+### Document lifecycle
+
+```text
+pending -> processing -> ready
+                     \-> failed
+```
+
+`error_message` is populated only for `failed` documents. `page_count` and `chunk_count` are written together with `ready`, so they are never partially filled. A document stuck in `processing` past the worker's stale threshold is reclaimable by another worker.
+
 ## Error format
 
 Every failure uses one envelope, including routing failures, validation failures, and unhandled exceptions:
@@ -88,6 +148,8 @@ Every failure uses one envelope, including routing failures, validation failures
 | `404` | `NOT_FOUND` | Unknown route or missing resource |
 | `405` | `METHOD_NOT_ALLOWED` | Route exists, method does not |
 | `409` | `CONFLICT` | Reserved for state conflicts |
+| `413` | `PAYLOAD_TOO_LARGE` | Upload exceeds `MAX_UPLOAD_MB` |
+| `415` | `UNSUPPORTED_MEDIA_TYPE` | Upload is not a PDF |
 | `422` | `VALIDATION_ERROR` | Request body, query, or path validation failed |
 | `500` | `INTERNAL_ERROR` | Unhandled exception; details are logged, not returned |
 | `500` | `DEVELOPMENT_OWNER_MISSING` | Seeded owner row is absent |
@@ -113,10 +175,7 @@ The frontend relies on `error.code`, not on message text, so wording can change 
 
 | Method | Path | Purpose | Milestone |
 | --- | --- | --- | --- |
-| `POST` | `/documents` | Upload a PDF | 2 |
-| `GET` | `/documents` | List and filter documents | 2 |
-| `GET` | `/documents/{id}` | Get document status | 2 |
-| `DELETE` | `/documents/{id}` | Delete a document and chunks | 2 |
+| `POST` | `/search` | Semantic search over ready chunks | 3 |
 | `POST` | `/chat` | Ask a grounded question | 4 |
 | `GET` | `/conversations` | List conversations | 4 |
 | `GET` | `/conversations/{id}` | Get a conversation | 4 |
