@@ -4,7 +4,7 @@ DocuMind is an AI-powered document research assistant. This repository is being 
 
 **Current status:** Milestone 3 complete — embeddings and semantic search.
 
-![DocuMind document workspace](docs/screenshots/milestone-2.png)
+![DocuMind Milestone 3](docs/screenshots/milestone-3.png)
 
 ## What works today
 
