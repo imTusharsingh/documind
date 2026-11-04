@@ -60,6 +60,8 @@ class EvaluationRun(Base):
     recall_at_k: Mapped[float] = mapped_column()
     mean_reciprocal_rank: Mapped[float] = mapped_column()
     page_match_rate: Mapped[float] = mapped_column()
+    label: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    embedding_model: Mapped[str | None] = mapped_column(String(120), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     dataset: Mapped[EvaluationDataset] = relationship(back_populates="runs")

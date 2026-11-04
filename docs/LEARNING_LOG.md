@@ -566,3 +566,37 @@ Stateless evaluation is useful for experimentation, but persistence is needed to
 
 Milestone 7 will add dataset editing, run labels, and trend visualizations.
 
+## Milestone 7 — Evaluation trends and configuration labels
+
+**Date:** 2026-11-04
+
+### What was built
+
+- Dataset PATCH endpoint with owner validation for replaced cases
+- Labeled evaluation runs with embedding-model metadata
+- Chronological trend endpoint for historical quality reporting
+- Evaluation UI inputs for run labels and model names
+- Lightweight Recall@k trend visualization
+- Migration and integration coverage for the new run metadata
+
+### Concepts learned
+
+Quality metrics are only comparable when the retrieval configuration is visible. Labels and embedding-model metadata provide the context needed to interpret a change in Recall@k or MRR. Dataset editing changes the cases used by future runs, while immutable historical runs preserve what was measured previously. A chronological trend endpoint keeps presentation concerns in the frontend while exposing a stable owner-scoped reporting contract.
+
+### Interview questions
+
+1. Why persist configuration metadata with every evaluation run?
+2. Why should editing a dataset not rewrite old runs?
+3. What must be validated when dataset cases are replaced?
+4. Why does the trend endpoint return chronological data?
+5. How can a label make a metric comparison misleading?
+6. Which retrieval settings should be included in a run identity?
+7. How would you detect a regression from a trend series?
+8. Why should a chart be backed by an API instead of recomputing history in the browser?
+9. How would you add confidence intervals for small datasets?
+10. When should a run be marked incomparable with another run?
+
+### Next milestone
+
+Milestone 8 will add exportable evaluation reports, regression thresholds, and richer multi-case editing.
+

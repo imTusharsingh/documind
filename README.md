@@ -2,9 +2,9 @@
 
 DocuMind is an AI-powered document research assistant. This repository is being built incrementally as a learning project covering FastAPI, PostgreSQL, pgvector, RAG, Docker, and production-quality frontend engineering.
 
-**Current status:** Milestone 6 complete — persistent evaluation datasets and run history.
+**Current status:** Milestone 7 complete — editable evaluation datasets and quality trends.
 
-![DocuMind Milestone 6](docs/screenshots/milestone-6.png)
+![DocuMind Milestone 7](docs/screenshots/milestone-7.png)
 
 ## What works today
 
@@ -27,6 +27,7 @@ DocuMind is an AI-powered document research assistant. This repository is being 
 - Grounded chat answers with persisted conversations, source previews, and validated citations
 - Stateless retrieval evaluation with Recall@k, MRR, and page-match metrics
 - Persistent owner-scoped evaluation datasets with historical quality comparisons
+- Editable datasets, labeled runs, embedding metadata, and quality trend reporting
 - Docker Compose for the web app, API, worker, and database, with health checks
 - **Rstest** + React Testing Library component tests
 - Pytest integration tests against a real PostgreSQL database
@@ -57,6 +58,7 @@ FastAPI
   +-- /api/v1/conversations conversation history and source citations
   +-- /api/v1/evaluation/run retrieval evaluation metrics
   +-- /api/v1/evaluation/datasets reusable evaluation cases and run history
+  +-- /api/v1/evaluation/datasets/{id}/trend historical quality trend
   |
   +-----------------------------+
   v                             v
@@ -189,9 +191,9 @@ documind/
 - One document owner, seeded by migration `0002`.
 - Text-based PDFs only; scanned PDFs fail with an explicit message because OCR is not included.
 - Chunking uses `cl100k_base`, 350 tokens with 50 tokens of overlap, never crossing page boundaries.
-- Evaluation datasets store expected document/page sources; runs store metrics and retrieved sources for comparison.
+- Evaluation datasets store expected document/page sources; runs store metrics, labels, embedding metadata, and retrieved sources for comparison.
 - No secrets are present in the frontend. The OpenAI key belongs in the backend `.env` only.
 
 ## Next milestone
 
-Milestone 7 will add richer dataset editing, model/configuration labels, and trend visualizations.
+Milestone 8 will add multi-case dataset editing in the UI, exportable reports, and regression thresholds.

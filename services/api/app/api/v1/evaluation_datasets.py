@@ -23,9 +23,11 @@ from app.schemas.evaluation import (
     EvaluationDatasetCreate,
     EvaluationDatasetDetail,
     EvaluationDatasetSummary,
+    EvaluationDatasetUpdate,
     EvaluationRunRequest,
     EvaluationRunResponse,
     EvaluationRunSummary,
+    EvaluationTrendResponse,
     RetrievedSource,
 )
 from app.services.embeddings import (
@@ -58,6 +60,8 @@ def _run_summary(run: EvaluationRun) -> EvaluationRunSummary:
         recall_at_k=run.recall_at_k,
         mean_reciprocal_rank=run.mean_reciprocal_rank,
         page_match_rate=run.page_match_rate,
+        label=run.label,
+        embedding_model=run.embedding_model,
         created_at=run.created_at.isoformat(),
     )
 
@@ -80,6 +84,19 @@ def _case_schema(case: EvaluationDatasetCase) -> EvaluationCase:
     return EvaluationCase(question=case.question, expected_sources=case.expected_sources)
 
 
+def _validate_document_ownership(
+    session: Session, owner: User, cases: list[EvaluationCase]
+) -> None:
+    document_ids = {source.document_id for case in cases for source in case.expected_sources}
+    owned_ids = set(
+        session.scalars(
+            select(Document.id).where(Document.owner_id == owner.id, Document.id.in_(document_ids))
+        )
+    )
+    if owned_ids != document_ids:
+        raise NotFoundError("Every expected source must reference one of your documents.")
+
+
 @router.post(
     "/evaluation/datasets",
     response_model=EvaluationDatasetDetail,
@@ -90,16 +107,7 @@ def create_dataset(
     session: Annotated[Session, Depends(get_session)],
     owner: Annotated[User, Depends(get_current_owner)],
 ) -> EvaluationDatasetDetail:
-    document_ids = {
-        source.document_id for case in request.cases for source in case.expected_sources
-    }
-    owned_ids = set(
-        session.scalars(
-            select(Document.id).where(Document.owner_id == owner.id, Document.id.in_(document_ids))
-        )
-    )
-    if owned_ids != document_ids:
-        raise NotFoundError("Every expected source must reference one of your documents.")
+    _validate_document_ownership(session, owner, request.cases)
     dataset = EvaluationDataset(
         id=uuid.uuid4(),
         owner_id=owner.id,
@@ -152,6 +160,52 @@ def read_dataset(
         **_dataset_summary(dataset).model_dump(),
         cases=[_case_schema(case) for case in dataset.cases],
         runs=[_run_summary(run) for run in dataset.runs],
+    )
+
+
+@router.patch("/evaluation/datasets/{dataset_id}", response_model=EvaluationDatasetDetail)
+def update_dataset(
+    dataset_id: uuid.UUID,
+    request: EvaluationDatasetUpdate,
+    session: Annotated[Session, Depends(get_session)],
+    owner: Annotated[User, Depends(get_current_owner)],
+) -> EvaluationDatasetDetail:
+    dataset = _get_dataset(session, owner.id, dataset_id)
+    if request.name is not None:
+        dataset.name = request.name
+    if request.description is not None:
+        dataset.description = request.description
+    if request.cases is not None:
+        _validate_document_ownership(session, owner, request.cases)
+        dataset.cases = [
+            EvaluationDatasetCase(
+                id=uuid.uuid4(),
+                position=position,
+                question=case.question,
+                expected_sources=[
+                    source.model_dump(mode="json") for source in case.expected_sources
+                ],
+            )
+            for position, case in enumerate(request.cases)
+        ]
+    session.commit()
+    session.refresh(dataset)
+    return read_dataset(dataset.id, session, owner)
+
+
+@router.get(
+    "/evaluation/datasets/{dataset_id}/trend",
+    response_model=EvaluationTrendResponse,
+)
+def dataset_trend(
+    dataset_id: uuid.UUID,
+    session: Annotated[Session, Depends(get_session)],
+    owner: Annotated[User, Depends(get_current_owner)],
+) -> EvaluationTrendResponse:
+    dataset = _get_dataset(session, owner.id, dataset_id)
+    return EvaluationTrendResponse(
+        dataset_id=dataset.id,
+        runs=[_run_summary(run) for run in reversed(dataset.runs)],
     )
 
 
@@ -215,6 +269,8 @@ def run_dataset(
         dataset_id=dataset.id,
         top_k=request.top_k,
         min_similarity=request.min_similarity,
+        label=request.label,
+        embedding_model=request.embedding_model,
         case_count=count,
         recall_at_k=round(sum(item.recall_at_k for item in results) / count, 6),
         mean_reciprocal_rank=round(sum(item.reciprocal_rank for item in results) / count, 6),

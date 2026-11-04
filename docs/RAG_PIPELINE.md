@@ -72,3 +72,5 @@ Milestone 5 implements a stateless evaluation endpoint. A request contains quest
 Results are returned to the frontend and can be inspected in the Evaluation page. Milestone 6 persists datasets, validates their expected sources against the owner, and stores immutable run summaries and per-case retrieved sources for historical comparison.
 
 Persistent evaluation data is deliberately separate from production document chunks: a dataset records the test intent, while each run records the retrieval configuration and observed results. This makes a run reproducible enough to compare changes without mutating older evidence.
+
+Milestone 7 adds explicit run labels and embedding-model metadata so a chart can compare retrieval configurations without treating two runs as equivalent. Dataset edits replace the case snapshot for future runs; existing run records remain immutable.

@@ -183,7 +183,15 @@ Returns one dataset's cases and historical run summaries. Cross-owner ids return
 
 ### `POST /api/v1/evaluation/datasets/{dataset_id}/runs`
 
-Runs every stored case with the selected retrieval settings and persists aggregate metrics plus per-case retrieved sources. Repeating a run creates a new immutable history entry.
+Runs every stored case with the selected retrieval settings and optional `label` and `embedding_model` metadata. It persists aggregate metrics plus per-case retrieved sources. Repeating a run creates a new immutable history entry.
+
+### `PATCH /api/v1/evaluation/datasets/{dataset_id}`
+
+Updates the dataset name, description, and optionally replaces its cases after validating all expected documents against the current owner.
+
+### `GET /api/v1/evaluation/datasets/{dataset_id}/trend`
+
+Returns chronological run summaries for the dataset, including labels, embedding metadata, and quality metrics for trend comparisons.
 
 ### Document lifecycle
 

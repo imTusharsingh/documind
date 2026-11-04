@@ -84,6 +84,19 @@ This is the quick-reference version of the interview questions in the learning l
 - What is the difference between a latest-run summary and a complete run detail?
 - How would trend visualizations help diagnose a regression in Recall@k or MRR?
 
+## Milestone 7 — Evaluation trends and configuration labels
+
+- Why should run labels and embedding-model metadata be persisted with metrics?
+- Why are historical runs immutable when a dataset is edited?
+- Why does a trend endpoint return chronological summaries rather than only the latest run?
+- What authorization checks are needed when replacing dataset cases?
+- How would you compare runs made with different `top_k` or similarity thresholds?
+- Why should a UI chart show the configuration label alongside its metric?
+- How would you prevent a missing model label from making a run look comparable?
+- What is the difference between editing a dataset and correcting a historical run?
+- How would you add regression thresholds to a trend report?
+- When should trend data be exported for offline analysis?
+
 ## Cross-cutting production questions
 
 - Where are authorization boundaries enforced, and how would you test for cross-owner leaks?

@@ -55,6 +55,8 @@ class EvaluationResponse(BaseModel):
 class EvaluationRunRequest(BaseModel):
     top_k: int = Field(default=5, ge=1, le=20)
     min_similarity: float = Field(default=0.0, ge=0.0, le=1.0)
+    label: str | None = Field(default=None, max_length=120)
+    embedding_model: str | None = Field(default=None, max_length=120)
 
 
 class EvaluationRunSummary(BaseModel):
@@ -65,6 +67,8 @@ class EvaluationRunSummary(BaseModel):
     recall_at_k: float
     mean_reciprocal_rank: float
     page_match_rate: float
+    label: str | None
+    embedding_model: str | None
     created_at: str
 
 
@@ -80,6 +84,27 @@ class EvaluationDatasetCreate(BaseModel):
         if not normalized:
             raise ValueError("Dataset name cannot be empty.")
         return normalized
+
+
+class EvaluationDatasetUpdate(BaseModel):
+    name: str | None = Field(default=None, min_length=1, max_length=120)
+    description: str | None = Field(default=None, max_length=500)
+    cases: list[EvaluationCase] | None = Field(default=None, min_length=1, max_length=100)
+
+    @field_validator("name")
+    @classmethod
+    def normalize_update_name(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        normalized = value.strip()
+        if not normalized:
+            raise ValueError("Dataset name cannot be empty.")
+        return normalized
+
+
+class EvaluationTrendResponse(BaseModel):
+    dataset_id: uuid.UUID
+    runs: list[EvaluationRunSummary]
 
 
 class EvaluationDatasetSummary(BaseModel):

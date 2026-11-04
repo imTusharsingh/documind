@@ -86,11 +86,20 @@ def test_persistent_dataset_saves_cases_and_historical_run(
 
     assert response.status_code == 201
     dataset_id = response.json()["id"]
-    run = client.post(f"/api/v1/evaluation/datasets/{dataset_id}/runs", json={"top_k": 5})
+    run = client.post(
+        f"/api/v1/evaluation/datasets/{dataset_id}/runs",
+        json={"top_k": 5, "label": "baseline", "embedding_model": "test-embedder"},
+    )
     assert run.status_code == 201
     assert run.json()["recall_at_k"] == 1.0
+    assert run.json()["label"] == "baseline"
+    assert run.json()["embedding_model"] == "test-embedder"
     assert len(run.json()["results"]) == 1
 
     detail = client.get(f"/api/v1/evaluation/datasets/{dataset_id}")
     assert detail.status_code == 200
     assert detail.json()["run_count"] == 1
+
+    trend = client.get(f"/api/v1/evaluation/datasets/{dataset_id}/trend")
+    assert trend.status_code == 200
+    assert trend.json()["runs"][0]["label"] == "baseline"

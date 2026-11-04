@@ -98,6 +98,8 @@ export interface EvaluationRunSummary {
   recall_at_k: number;
   mean_reciprocal_rank: number;
   page_match_rate: number;
+  label: string | null;
+  embedding_model: string | null;
   created_at: string;
 }
 
@@ -120,6 +122,11 @@ export interface EvaluationDatasetDetail extends EvaluationDataset {
 export interface PersistentEvaluationResponse extends EvaluationRunSummary {
   dataset_id: string;
   results: EvaluationCaseResult[];
+}
+
+export interface EvaluationTrendResponse {
+  dataset_id: string;
+  runs: EvaluationRunSummary[];
 }
 
 interface ErrorEnvelope {
@@ -320,12 +327,38 @@ export async function createEvaluationDataset(
   return (await response.json()) as EvaluationDatasetDetail;
 }
 
-export async function runEvaluationDataset(datasetId: string): Promise<PersistentEvaluationResponse> {
+export async function runEvaluationDataset(
+  datasetId: string,
+  label?: string,
+  embeddingModel?: string,
+): Promise<PersistentEvaluationResponse> {
   const response = await fetch(`/api/v1/evaluation/datasets/${encodeURIComponent(datasetId)}/runs`, {
     method: 'POST',
     headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
-    body: JSON.stringify({ top_k: 5 }),
+    body: JSON.stringify({ top_k: 5, label: label?.trim() || null, embedding_model: embeddingModel?.trim() || null }),
   });
   if (!response.ok) throw await toApiError(response);
   return (await response.json()) as PersistentEvaluationResponse;
+}
+
+export async function updateEvaluationDataset(
+  datasetId: string,
+  name: string,
+  description: string,
+): Promise<EvaluationDatasetDetail> {
+  const response = await fetch(`/api/v1/evaluation/datasets/${encodeURIComponent(datasetId)}`, {
+    method: 'PATCH',
+    headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, description }),
+  });
+  if (!response.ok) throw await toApiError(response);
+  return (await response.json()) as EvaluationDatasetDetail;
+}
+
+export async function fetchEvaluationTrend(datasetId: string): Promise<EvaluationTrendResponse> {
+  const response = await fetch(`/api/v1/evaluation/datasets/${encodeURIComponent(datasetId)}/trend`, {
+    headers: { Accept: 'application/json' },
+  });
+  if (!response.ok) throw await toApiError(response);
+  return (await response.json()) as EvaluationTrendResponse;
 }
