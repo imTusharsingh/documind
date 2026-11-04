@@ -20,18 +20,18 @@
 :root {
   color-scheme: light;
 
-  --background: #f3f6f5;
+  --background: #faf9ff;
   --surface: #ffffff;
-  --foreground: #102a2d;
-  --muted: #627477;
-  --border: #d8e3e1;
-  --primary: #0b6b66;
-  --primary-hover: #075852;
+  --foreground: #17104a;
+  --muted: #68708a;
+  --border: #e5e1f5;
+  --primary: #5b21f5;
+  --primary-hover: #4318c9;
   --success: #247a58;
   --warning: #aa6d1a;
   --error: #b94a4a;
-  --citation: #e5f3f0;
-  --ring: rgba(11, 107, 102, 0.18);
+  --citation: #eee9ff;
+  --ring: rgba(91, 33, 245, 0.18);
 }
 
 @layer base {
@@ -54,7 +54,7 @@
     line-height: 22px;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
-    background-image: radial-gradient(circle at 1px 1px, rgba(16, 42, 45, 0.035) 1px, transparent 0);
+    background-image: radial-gradient(circle at 1px 1px, rgba(91, 33, 245, 0.045) 1px, transparent 0);
     background-size: 24px 24px;
   }
 
