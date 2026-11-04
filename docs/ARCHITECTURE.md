@@ -235,3 +235,7 @@ Chunks never span pages. Cross-page windows can improve retrieval slightly by av
 - Uploads are validated by extension, PDF signature, and size; filenames are reduced to a bare name and storage paths are derived from server-generated ids.
 - Stored files are removed when a document is deleted or when the database insert fails after a successful write.
 - Error responses expose stable codes, never internal exception text.
+
+## Product surfaces
+
+The frontend has three deliberate surfaces: `documind.com` is the public marketing site, `docs.documind.com` is the documentation site, and `platform.documind.com` is the internal application. The router uses the hostname in production and keeps `/home` and `/docs` as local development previews.

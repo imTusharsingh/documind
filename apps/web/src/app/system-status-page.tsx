@@ -97,23 +97,23 @@ export function SystemStatusPage() {
     <div className="space-y-6">
       <PageHeader eyebrow="Operations" title="System readiness" description="DocuMind is running locally. This screen verifies the web application, the API, and its PostgreSQL connection alongside the document ingestion pipeline." action={<Link
           to="/documents"
-          className="inline-flex h-9 items-center gap-1.5 rounded-md bg-primary px-3 text-xs font-medium text-white transition-colors hover:bg-primary-hover"
+          className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-primary px-3 text-xs font-medium text-white transition-colors hover:bg-primary-hover"
         >
           Manage documents
           <ArrowRight aria-hidden="true" size={13} />
         </Link>} />
 
       <section className="grid gap-4 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
-        <article className="rounded-lg border border-border bg-surface p-6">
+        <article className="rounded-2xl border border-border bg-surface p-6">
           <div className="flex items-start justify-between gap-4">
-            <div className="flex size-10 items-center justify-center rounded-md border border-border bg-background text-primary">
+            <div className="flex size-10 items-center justify-center rounded-lg border border-border bg-background text-primary">
               <Server aria-hidden="true" size={18} strokeWidth={2} />
             </div>
             <button
               type="button"
               onClick={() => void healthQuery.refetch()}
               disabled={healthQuery.isFetching}
-              className="inline-flex h-8 items-center gap-1.5 rounded-md border border-border bg-surface px-3 text-xs font-medium text-foreground transition-colors hover:bg-background disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-border bg-surface px-3 text-xs font-medium text-foreground transition-colors hover:bg-background disabled:cursor-not-allowed disabled:opacity-50"
             >
               <RefreshCw
                 aria-hidden="true"
@@ -158,14 +158,14 @@ export function SystemStatusPage() {
               ) : null}
             </div>
             {database?.error ? (
-              <p className="rounded-md border border-error/20 bg-error/5 px-3 py-2 text-xs leading-5 text-error">
+              <p className="rounded-lg border border-error/20 bg-error/5 px-3 py-2 text-xs leading-5 text-error">
                 {database.error}
               </p>
             ) : null}
           </div>
 
           {healthQuery.isError ? (
-            <p className="mt-5 rounded-md border border-error/20 bg-error/5 px-3 py-2 text-xs leading-5 text-error">
+            <p className="mt-5 rounded-lg border border-error/20 bg-error/5 px-3 py-2 text-xs leading-5 text-error">
               {healthQuery.error instanceof Error
                 ? healthQuery.error.message
                 : 'The API health check failed.'}
@@ -188,7 +188,7 @@ export function SystemStatusPage() {
           </div>
         </article>
 
-        <article className="rounded-lg border border-border bg-surface p-6">
+        <article className="rounded-2xl border border-border bg-surface p-6">
           <h2 className="text-lg font-semibold leading-7">Environment</h2>
           <p className="mt-1 text-sm leading-[22px] text-muted">
             Services defined in Docker Compose for local development.
@@ -254,10 +254,10 @@ export function SystemStatusPage() {
         </article>
       </section>
 
-      <section className="rounded-lg border border-border bg-surface p-6">
+      <section className="rounded-2xl border border-border bg-surface p-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="flex items-start gap-3">
-            <div className="flex size-10 items-center justify-center rounded-md border border-border bg-background text-primary">
+            <div className="flex size-10 items-center justify-center rounded-lg border border-border bg-background text-primary">
               <UserRound aria-hidden="true" size={18} strokeWidth={2} />
             </div>
             <div>
@@ -296,7 +296,7 @@ export function SystemStatusPage() {
         ) : null}
 
         {ownerQuery.isError ? (
-          <p className="mt-5 rounded-md border border-error/20 bg-error/5 px-3 py-2 text-xs leading-5 text-error">
+          <p className="mt-5 rounded-lg border border-error/20 bg-error/5 px-3 py-2 text-xs leading-5 text-error">
             {ownerQuery.error instanceof Error
               ? ownerQuery.error.message
               : 'The owner record could not be loaded.'}
@@ -304,7 +304,7 @@ export function SystemStatusPage() {
         ) : null}
       </section>
 
-      <section className="rounded-lg border border-border bg-surface p-6">
+      <section className="rounded-2xl border border-border bg-surface p-6">
         <h2 className="text-lg font-semibold leading-7">Build progress</h2>
         <p className="mt-1 text-sm leading-[22px] text-muted">
           Document ingestion and semantic retrieval are available now. Grounded answers build on
@@ -334,12 +334,12 @@ export function SystemStatusPage() {
               <Link
                 key={milestone.title}
                 to={milestone.to}
-                className="rounded-md border border-primary/30 bg-citation p-4 transition-colors hover:border-primary/50"
+                className="rounded-lg border border-primary/30 bg-citation p-4 transition-colors hover:border-primary/50"
               >
                 {content}
               </Link>
             ) : (
-              <div key={milestone.title} className="rounded-md border border-border bg-background p-4">
+              <div key={milestone.title} className="rounded-lg border border-border bg-background p-4">
                 {content}
               </div>
             );

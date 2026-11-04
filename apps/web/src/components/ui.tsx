@@ -24,3 +24,7 @@ export function Field({ label, hint, className, ...props }: InputHTMLAttributes<
 export function SectionHeading({ title, description, action }: { title: string; description?: string; action?: ReactNode }) {
   return <div className="flex flex-wrap items-start justify-between gap-3"><div><h2 className="text-base font-semibold tracking-tight">{title}</h2>{description ? <p className="mt-1 text-sm text-muted">{description}</p> : null}</div>{action}</div>;
 }
+
+export function BrandMark({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) {
+  return <span aria-hidden="true" className={cn('inline-flex shrink-0 items-center justify-center rounded-[10px] bg-primary font-bold text-white', size === 'sm' ? 'size-7 text-[11px]' : size === 'lg' ? 'size-11 rounded-[14px] text-lg' : 'size-8 text-xs')}>D</span>;
+}

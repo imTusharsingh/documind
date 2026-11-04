@@ -14,7 +14,7 @@ function errorMessage(error: unknown): string {
 
 function Answer({ response }: { response: ChatResponse }) {
   return (
-    <article className="rounded-lg border border-border bg-surface p-5">
+    <article className="rounded-2xl border border-border bg-surface p-5">
       <div className="flex items-center gap-2 text-sm font-semibold">
         <Sparkles aria-hidden="true" size={15} className="text-primary" />
         Answer
@@ -25,7 +25,7 @@ function Answer({ response }: { response: ChatResponse }) {
           <p className="text-xs font-semibold uppercase tracking-wide text-muted">Sources</p>
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
             {response.citations.map((citation) => (
-              <div key={citation.chunk_id} className="rounded-md border border-border bg-citation p-3">
+              <div key={citation.chunk_id} className="rounded-lg border border-border bg-citation p-3">
                 <div className="flex items-center gap-2 text-xs font-medium text-primary">
                   <BookOpen aria-hidden="true" size={13} />
                   {citation.document_name} · page {citation.page_number}
@@ -63,21 +63,21 @@ export function ChatPage() {
 
       <section className="space-y-4">
         {askMutation.data ? <Answer response={askMutation.data} /> : (
-          <div className="rounded-lg border border-dashed border-border px-6 py-12 text-center">
+          <div className="rounded-2xl border border-dashed border-border px-6 py-12 text-center">
             <Sparkles aria-hidden="true" size={24} className="mx-auto text-muted" />
             <p className="mt-3 text-sm font-medium">Ready to research</p>
             <p className="mt-1 text-xs text-muted">Ask a question about your uploaded documents.</p>
           </div>
         )}
         {askMutation.isError ? (
-          <p className="flex items-start gap-2 rounded-md border border-error/20 bg-error/5 px-3 py-2 text-xs leading-5 text-error">
+          <p className="flex items-start gap-2 rounded-lg border border-error/20 bg-error/5 px-3 py-2 text-xs leading-5 text-error">
             <AlertCircle aria-hidden="true" size={14} className="mt-0.5 shrink-0" />
             {errorMessage(askMutation.error)}
           </p>
         ) : null}
       </section>
 
-      <form onSubmit={handleSubmit} className="sticky bottom-4 rounded-lg border border-border bg-surface p-4 shadow-sm">
+      <form onSubmit={handleSubmit} className="sticky bottom-4 rounded-2xl border border-border bg-surface p-4 shadow-sm">
         <label className="sr-only" htmlFor="chat-question">Ask a question</label>
         <div className="flex gap-3">
           <textarea
@@ -87,12 +87,12 @@ export function ChatPage() {
             placeholder="Ask a grounded question…"
             rows={2}
             maxLength={4000}
-            className="min-h-11 min-w-0 flex-1 resize-y rounded-md border border-border bg-background px-3 py-2 text-sm leading-5 outline-none placeholder:text-muted focus:border-primary"
+            className="min-h-11 min-w-0 flex-1 resize-y rounded-lg border border-border bg-background px-3 py-2 text-sm leading-5 outline-none placeholder:text-muted focus:border-primary"
           />
           <button
             type="submit"
             disabled={!question.trim() || askMutation.isPending}
-            className="inline-flex h-11 shrink-0 items-center justify-center gap-2 self-end rounded-md bg-primary px-4 text-sm font-medium text-white transition-colors hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex h-11 shrink-0 items-center justify-center gap-2 self-end rounded-lg bg-primary px-4 text-sm font-medium text-white transition-colors hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
           >
             {askMutation.isPending ? <LoaderCircle aria-hidden="true" size={15} className="animate-spin" /> : <Send aria-hidden="true" size={15} />}
             Ask

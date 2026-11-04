@@ -13,7 +13,7 @@ import { MarketingPage } from './marketing-page';
 
 export function AppRouter() {
   const hostname = window.location.hostname;
-  const homeHost = hostname.startsWith('www.') || hostname.startsWith('home.');
+  const homeHost = hostname === 'documind.com' || hostname === 'www.documind.com' || hostname.startsWith('www.') || hostname.startsWith('home.');
   const docsHost = hostname.startsWith('docs.');
 
   return (

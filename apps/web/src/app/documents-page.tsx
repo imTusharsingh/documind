@@ -124,7 +124,7 @@ export function DocumentsPage() {
           type="button"
           onClick={() => void documentsQuery.refetch()}
           disabled={documentsQuery.isFetching}
-          className="inline-flex h-9 items-center gap-1.5 rounded-md border border-border bg-surface px-3 text-xs font-medium text-foreground transition-colors hover:bg-background disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-border bg-surface px-3 text-xs font-medium text-foreground transition-colors hover:bg-background disabled:cursor-not-allowed disabled:opacity-50"
         >
           <RefreshCw
             aria-hidden="true"
@@ -134,9 +134,9 @@ export function DocumentsPage() {
           Refresh
         </button>} />
 
-      <section className="rounded-lg border border-border bg-surface p-6">
+      <section className="rounded-2xl border border-border bg-surface p-6">
         <div className="flex items-start gap-3">
-          <div className="flex size-10 shrink-0 items-center justify-center rounded-md border border-border bg-background text-primary">
+          <div className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-border bg-background text-primary">
             <Upload aria-hidden="true" size={18} strokeWidth={2} />
           </div>
           <div>
@@ -151,7 +151,7 @@ export function DocumentsPage() {
 
         <form onSubmit={handleSubmit} className="mt-5 space-y-3">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <label className="flex min-w-0 flex-1 cursor-pointer items-center gap-3 rounded-md border border-dashed border-border bg-background px-4 py-3 transition-colors hover:border-primary/40">
+            <label className="flex min-w-0 flex-1 cursor-pointer items-center gap-3 rounded-lg border border-dashed border-border bg-background px-4 py-3 transition-colors hover:border-primary/40">
               <FileText aria-hidden="true" size={18} className="shrink-0 text-muted" />
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-sm font-medium">
@@ -175,7 +175,7 @@ export function DocumentsPage() {
             <button
               type="submit"
               disabled={!selectedFile || uploadMutation.isPending}
-              className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-medium text-white transition-colors hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-white transition-colors hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
             >
               {uploadMutation.isPending ? (
                 <LoaderCircle aria-hidden="true" size={15} className="animate-spin" />
@@ -187,14 +187,14 @@ export function DocumentsPage() {
           </div>
 
           {localError ? (
-            <p className="flex items-start gap-2 rounded-md border border-error/20 bg-error/5 px-3 py-2 text-xs leading-5 text-error">
+            <p className="flex items-start gap-2 rounded-lg border border-error/20 bg-error/5 px-3 py-2 text-xs leading-5 text-error">
               <AlertCircle aria-hidden="true" size={14} className="mt-0.5 shrink-0" />
               {localError}
             </p>
           ) : null}
 
           {uploadMutation.isError ? (
-            <p className="flex items-start gap-2 rounded-md border border-error/20 bg-error/5 px-3 py-2 text-xs leading-5 text-error">
+            <p className="flex items-start gap-2 rounded-lg border border-error/20 bg-error/5 px-3 py-2 text-xs leading-5 text-error">
               <AlertCircle aria-hidden="true" size={14} className="mt-0.5 shrink-0" />
               {errorMessage(uploadMutation.error, 'The upload failed.')}
             </p>
@@ -202,7 +202,7 @@ export function DocumentsPage() {
         </form>
       </section>
 
-      <section className="rounded-lg border border-border bg-surface">
+      <section className="rounded-2xl border border-border bg-surface">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-6 py-4">
           <div>
             <h2 className="text-lg font-semibold leading-7">Library</h2>
@@ -224,7 +224,7 @@ export function DocumentsPage() {
 
         {documentsQuery.isError ? (
           <div className="border-b border-border px-6 py-4">
-            <p className="flex items-start gap-2 rounded-md border border-error/20 bg-error/5 px-3 py-2 text-xs leading-5 text-error">
+            <p className="flex items-start gap-2 rounded-lg border border-error/20 bg-error/5 px-3 py-2 text-xs leading-5 text-error">
               <AlertCircle aria-hidden="true" size={14} className="mt-0.5 shrink-0" />
               {errorMessage(documentsQuery.error, 'The document list could not be loaded.')}
             </p>
@@ -233,7 +233,7 @@ export function DocumentsPage() {
 
         {deleteMutation.isError ? (
           <div className="border-b border-border px-6 py-4">
-            <p className="flex items-start gap-2 rounded-md border border-error/20 bg-error/5 px-3 py-2 text-xs leading-5 text-error">
+            <p className="flex items-start gap-2 rounded-lg border border-error/20 bg-error/5 px-3 py-2 text-xs leading-5 text-error">
               <AlertCircle aria-hidden="true" size={14} className="mt-0.5 shrink-0" />
               {errorMessage(deleteMutation.error, 'The document could not be deleted.')}
             </p>
@@ -247,7 +247,7 @@ export function DocumentsPage() {
           </div>
         ) : documents.length === 0 ? (
           <div className="flex flex-col items-center justify-center px-6 py-12 text-center">
-            <div className="flex size-10 items-center justify-center rounded-md border border-border bg-background text-muted">
+            <div className="flex size-10 items-center justify-center rounded-lg border border-border bg-background text-muted">
               <FileText aria-hidden="true" size={18} />
             </div>
             <p className="mt-3 text-sm font-medium">No documents uploaded</p>
@@ -326,7 +326,7 @@ export function DocumentsPage() {
                             type="button"
                             onClick={() => deleteMutation.mutate(document.id)}
                             disabled={deleteMutation.isPending}
-                            className="inline-flex h-8 items-center gap-1.5 rounded-md bg-error px-2.5 text-xs font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                            className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-error px-2.5 text-xs font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
                           >
                             {deleteMutation.isPending ? (
                               <LoaderCircle aria-hidden="true" size={12} className="animate-spin" />
@@ -337,7 +337,7 @@ export function DocumentsPage() {
                             type="button"
                             onClick={() => setConfirmingId(null)}
                             disabled={deleteMutation.isPending}
-                            className="inline-flex h-8 items-center rounded-md border border-border bg-surface px-2.5 text-xs font-medium transition-colors hover:bg-background disabled:cursor-not-allowed disabled:opacity-50"
+                            className="inline-flex h-8 items-center rounded-lg border border-border bg-surface px-2.5 text-xs font-medium transition-colors hover:bg-background disabled:cursor-not-allowed disabled:opacity-50"
                           >
                             Cancel
                           </button>
@@ -347,7 +347,7 @@ export function DocumentsPage() {
                           type="button"
                           onClick={() => handleConfirmDelete(document.id)}
                           aria-label={`Delete ${document.original_filename}`}
-                          className="inline-flex size-8 items-center justify-center rounded-md border border-border bg-surface text-muted transition-colors hover:border-error/30 hover:bg-error/5 hover:text-error"
+                          className="inline-flex size-8 items-center justify-center rounded-lg border border-border bg-surface text-muted transition-colors hover:border-error/30 hover:bg-error/5 hover:text-error"
                         >
                           <Trash2 aria-hidden="true" size={14} />
                         </button>

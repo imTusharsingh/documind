@@ -1,8 +1,9 @@
-import { BarChart3, FileSearch, FileText, LayoutDashboard, LibraryBig, MessageSquareText, Settings, WalletCards } from 'lucide-react';
+import { BarChart3, FileSearch, FileText, LayoutDashboard, MessageSquareText, Settings, WalletCards } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { NavLink } from 'react-router-dom';
 
 import { cn } from '@/lib/utils';
+import { BrandMark } from '@/components/ui';
 
 interface AppShellProps {
   children: ReactNode;
@@ -24,9 +25,7 @@ export function AppShell({ children }: AppShellProps) {
       <div className="mx-auto flex min-h-screen w-full max-w-[1440px]">
         <aside className="sticky top-0 hidden h-screen w-64 shrink-0 border-r border-border bg-surface/95 backdrop-blur md:flex md:flex-col">
           <div className="flex h-16 items-center gap-3 border-b border-border px-6">
-            <div className="flex size-8 items-center justify-center rounded-md bg-primary text-white">
-              <LibraryBig aria-hidden="true" size={17} strokeWidth={2} />
-            </div>
+            <BrandMark />
             <div className="min-w-0">
               <p className="truncate text-sm font-semibold tracking-tight">DocuMind</p>
               <p className="truncate text-[11px] leading-4 text-muted">Research workspace</p>
@@ -67,9 +66,7 @@ export function AppShell({ children }: AppShellProps) {
         <main className="min-w-0 flex-1">
           <header className="sticky top-0 z-20 border-b border-border bg-surface/95 px-6 backdrop-blur md:hidden">
             <div className="flex h-16 items-center gap-3">
-              <div className="flex size-8 items-center justify-center rounded-md bg-primary text-white">
-                <LibraryBig aria-hidden="true" size={17} strokeWidth={2} />
-              </div>
+              <BrandMark />
               <p className="text-sm font-semibold tracking-tight">DocuMind</p>
             </div>
             <nav aria-label="Primary" className="-mx-1 flex gap-1 overflow-x-auto pb-2">
