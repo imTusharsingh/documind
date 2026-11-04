@@ -5,7 +5,7 @@ def test_migrations_are_at_head(engine: Engine) -> None:
     with engine.connect() as connection:
         version = connection.execute(text("SELECT version_num FROM alembic_version")).scalar()
 
-    assert version == "0008"
+    assert version == "0009"
 
 
 def test_users_table_has_expected_columns(engine: Engine) -> None:
@@ -87,3 +87,8 @@ def test_conversation_tables_exist(engine: Engine) -> None:
     tables = set(inspect(engine).get_table_names())
 
     assert {"conversations", "messages", "message_citations"} <= tables
+
+
+def test_workspace_settings_table_exists(engine: Engine) -> None:
+    tables = set(inspect(engine).get_table_names())
+    assert "workspace_settings" in tables

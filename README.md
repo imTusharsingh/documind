@@ -30,6 +30,7 @@ DocuMind is an AI-powered document research assistant. This repository is being 
 - Editable datasets, labeled runs, embedding metadata, and quality trend reporting
 - Multi-case dataset authoring with regression thresholds and JSON/CSV evaluation reports
 - Product workspace with a shared design system, overview, settings, and token usage history
+- Server-backed workspace settings for provider tokens, models, extraction, upload, and retrieval defaults, with reset-to-defaults support
 - Separate product marketing (`/home`) and documentation (`/docs`) surfaces with responsive navigation and favicon branding
 
 ## Product surfaces
@@ -47,7 +48,7 @@ Local development exposes these as `/home`, `/docs`, and `/` respectively; produ
 - Ruff and TypeScript checks
 - Milestone learning log and consolidated interview guide
 
-Grounded answer generation is intentionally not implemented yet.
+Grounded answer generation is available when the workspace has a configured provider token; without one, ingestion and chat report a clear configuration error.
 
 ## Architecture
 
@@ -72,6 +73,8 @@ FastAPI
   +-- /api/v1/evaluation/run retrieval evaluation metrics
   +-- /api/v1/evaluation/datasets reusable evaluation cases and run history
   +-- /api/v1/evaluation/datasets/{id}/trend historical quality trend
+  +-- /api/v1/settings      workspace provider and extraction configuration
+  +-- /api/v1/usage         owner-scoped token usage history
   |
   +-----------------------------+
   v                             v
@@ -200,7 +203,7 @@ documind/
 
 ## Current boundaries
 
-- Single local user; authentication is not implemented.
+- Single local user; authentication is not implemented yet.
 - One document owner, seeded by migration `0002`.
 - Text-based PDFs only; scanned PDFs fail with an explicit message because OCR is not included.
 - Chunking uses `cl100k_base`, 350 tokens with 50 tokens of overlap, never crossing page boundaries.

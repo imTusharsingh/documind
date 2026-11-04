@@ -14,6 +14,7 @@ from app.models.evaluation import (
     EvaluationRunResult,
 )
 from app.models.user import User
+from app.models.workspace_settings import WorkspaceSettings
 
 __all__ = [
     "Base",
@@ -29,4 +30,5 @@ __all__ = [
     "MessageCitation",
     "MessageRole",
     "User",
+    "WorkspaceSettings",
 ]

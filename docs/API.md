@@ -201,6 +201,18 @@ Returns an exportable evaluation report containing dataset thresholds, run summa
 
 Returns owner-scoped token usage totals and recent grounded-answer events. The `limit` query parameter accepts 1–100 events and defaults to 30. Token usage is read from persisted assistant messages; provider secrets are never returned.
 
+### `GET /api/v1/settings`
+
+Returns the current owner-scoped workspace configuration. API keys are represented only by `api_key_configured` and a short hint.
+
+### `PATCH /api/v1/settings`
+
+Updates provider, extraction, upload, and retrieval defaults. The API token is accepted by the server and never returned in full.
+
+### `POST /api/v1/settings/reset`
+
+Restores the configured server defaults and clears the saved workspace API token.
+
 ### Document lifecycle
 
 ```text

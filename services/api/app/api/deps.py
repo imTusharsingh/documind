@@ -11,6 +11,7 @@ from app.models.user import User
 from app.repositories.users import get_development_owner
 from app.services.answers import AnswerProvider, create_answer_provider
 from app.services.embeddings import EmbeddingProvider, create_embedding_provider
+from app.services.workspace_settings import apply_workspace_settings, get_workspace_settings
 
 
 def get_current_owner(session: Annotated[Session, Depends(get_session)]) -> User:
@@ -24,14 +25,20 @@ def get_current_owner(session: Annotated[Session, Depends(get_session)]) -> User
 
 
 def get_embedding_provider(
+    session: Annotated[Session, Depends(get_session)],
+    owner: Annotated[User, Depends(get_current_owner)],
     settings: Annotated[Settings, Depends(get_settings)],
 ) -> EmbeddingProvider:
     """Return the configured embedding provider for a request."""
-    return create_embedding_provider(settings)
+    workspace = get_workspace_settings(session, owner.id, settings)
+    return create_embedding_provider(apply_workspace_settings(settings, workspace))
 
 
 def get_answer_provider(
+    session: Annotated[Session, Depends(get_session)],
+    owner: Annotated[User, Depends(get_current_owner)],
     settings: Annotated[Settings, Depends(get_settings)],
 ) -> AnswerProvider:
     """Return the configured grounded-answer provider for a request."""
-    return create_answer_provider(settings)
+    workspace = get_workspace_settings(session, owner.id, settings)
+    return create_answer_provider(apply_workspace_settings(settings, workspace))

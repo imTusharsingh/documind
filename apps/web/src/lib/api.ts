@@ -165,6 +165,25 @@ export interface UsageResponse {
   events: UsageEvent[];
 }
 
+export interface WorkspaceSettings {
+  api_key_configured: boolean;
+  api_key_hint: string | null;
+  llm_model: string;
+  embedding_model: string;
+  embedding_dim: number;
+  embedding_batch_size: number;
+  embedding_timeout_seconds: number;
+  embedding_max_retries: number;
+  chunk_tokens: number;
+  chunk_overlap_tokens: number;
+  max_upload_mb: number;
+  retrieval_top_k: number;
+  min_similarity: number;
+  updated_at: string | null;
+}
+
+export type WorkspaceSettingsUpdate = Partial<WorkspaceSettings> & { openai_api_key?: string | null };
+
 interface ErrorEnvelope {
   error: {
     code: string;
@@ -236,6 +255,24 @@ export async function fetchUsage(signal?: AbortSignal): Promise<UsageResponse> {
   const response = await fetch('/api/v1/usage', { headers: { Accept: 'application/json' }, signal });
   if (!response.ok) throw await toApiError(response);
   return (await response.json()) as UsageResponse;
+}
+
+export async function fetchWorkspaceSettings(signal?: AbortSignal): Promise<WorkspaceSettings> {
+  const response = await fetch('/api/v1/settings', { headers: { Accept: 'application/json' }, signal });
+  if (!response.ok) throw await toApiError(response);
+  return (await response.json()) as WorkspaceSettings;
+}
+
+export async function updateWorkspaceSettings(update: WorkspaceSettingsUpdate): Promise<WorkspaceSettings> {
+  const response = await fetch('/api/v1/settings', { method: 'PATCH', headers: { Accept: 'application/json', 'Content-Type': 'application/json' }, body: JSON.stringify(update) });
+  if (!response.ok) throw await toApiError(response);
+  return (await response.json()) as WorkspaceSettings;
+}
+
+export async function resetWorkspaceSettings(): Promise<WorkspaceSettings> {
+  const response = await fetch('/api/v1/settings/reset', { method: 'POST', headers: { Accept: 'application/json' } });
+  if (!response.ok) throw await toApiError(response);
+  return (await response.json()) as WorkspaceSettings;
 }
 
 export async function fetchDocuments(signal?: AbortSignal): Promise<DocumentResponse[]> {
