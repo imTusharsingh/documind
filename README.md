@@ -30,6 +30,7 @@ DocuMind is an AI-powered document research assistant. This repository is being 
 - Editable datasets, labeled runs, embedding metadata, and quality trend reporting
 - Multi-case dataset authoring with regression thresholds and JSON/CSV evaluation reports
 - Product workspace with a shared design system, overview, settings, and token usage history
+- Separate product marketing (`/home`) and documentation (`/docs`) surfaces with responsive navigation and favicon branding
 - Docker Compose for the web app, API, worker, and database, with health checks
 - **Rstest** + React Testing Library component tests
 - Pytest integration tests against a real PostgreSQL database

@@ -8,17 +8,23 @@ import { SearchPage } from './search-page';
 import { OverviewPage } from './overview-page';
 import { SettingsPage } from './settings-page';
 import { UsagePage } from './usage-page';
+import { DocsPage } from './docs-page';
+import { MarketingPage } from './marketing-page';
 
 export function AppRouter() {
+  const hostname = window.location.hostname;
+  const homeHost = hostname.startsWith('www.') || hostname.startsWith('home.');
+  const docsHost = hostname.startsWith('docs.');
+
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/home" element={<MarketingPage />} />
+        <Route path="/docs" element={<DocsPage />} />
         <Route
           path="/"
           element={
-            <AppShell>
-            <OverviewPage />
-            </AppShell>
+            homeHost ? <MarketingPage /> : docsHost ? <DocsPage /> : <AppShell><OverviewPage /></AppShell>
           }
         />
         <Route

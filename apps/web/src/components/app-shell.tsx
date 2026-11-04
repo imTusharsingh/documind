@@ -22,7 +22,7 @@ export function AppShell({ children }: AppShellProps) {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <div className="mx-auto flex min-h-screen w-full max-w-[1440px]">
-        <aside className="hidden w-60 shrink-0 border-r border-border bg-surface md:flex md:flex-col">
+        <aside className="sticky top-0 hidden h-screen w-64 shrink-0 border-r border-border bg-surface/95 backdrop-blur md:flex md:flex-col">
           <div className="flex h-16 items-center gap-3 border-b border-border px-6">
             <div className="flex size-8 items-center justify-center rounded-md bg-primary text-white">
               <LibraryBig aria-hidden="true" size={17} strokeWidth={2} />
@@ -65,7 +65,7 @@ export function AppShell({ children }: AppShellProps) {
         </aside>
 
         <main className="min-w-0 flex-1">
-          <header className="border-b border-border bg-surface px-6 md:hidden">
+          <header className="sticky top-0 z-20 border-b border-border bg-surface/95 px-6 backdrop-blur md:hidden">
             <div className="flex h-16 items-center gap-3">
               <div className="flex size-8 items-center justify-center rounded-md bg-primary text-white">
                 <LibraryBig aria-hidden="true" size={17} strokeWidth={2} />

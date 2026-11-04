@@ -20,18 +20,18 @@
 :root {
   color-scheme: light;
 
-  --background: #f8f9fb;
+  --background: #f3f6f5;
   --surface: #ffffff;
-  --foreground: #172033;
-  --muted: #64748b;
-  --border: #e2e8f0;
-  --primary: #4f46e5;
-  --primary-hover: #4338ca;
-  --success: #15803d;
-  --warning: #b45309;
-  --error: #b91c1c;
-  --citation: #eef2ff;
-  --ring: rgba(79, 70, 229, 0.18);
+  --foreground: #102a2d;
+  --muted: #627477;
+  --border: #d8e3e1;
+  --primary: #0b6b66;
+  --primary-hover: #075852;
+  --success: #247a58;
+  --warning: #aa6d1a;
+  --error: #b94a4a;
+  --citation: #e5f3f0;
+  --ring: rgba(11, 107, 102, 0.18);
 }
 
 @layer base {
@@ -54,6 +54,8 @@
     line-height: 22px;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+    background-image: radial-gradient(circle at 1px 1px, rgba(16, 42, 45, 0.035) 1px, transparent 0);
+    background-size: 24px 24px;
   }
 
   button, input, textarea, select { font: inherit; }
