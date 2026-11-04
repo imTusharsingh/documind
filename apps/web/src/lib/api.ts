@@ -1,18 +1,55 @@
+export interface DependencyStatus {
+  status: 'up' | 'down';
+  latency_ms: number | null;
+  error: string | null;
+}
+
 export interface HealthResponse {
-  status: 'ok';
+  status: 'ok' | 'degraded';
   service: string;
   version: string;
   environment: string;
+  dependencies: Record<string, DependencyStatus>;
+}
+
+export interface OwnerResponse {
+  id: string;
+  email: string;
+  display_name: string;
+  created_at: string;
+}
+
+interface ErrorEnvelope {
+  error: {
+    code: string;
+    message: string;
+    details: unknown;
+  };
 }
 
 export class ApiError extends Error {
   readonly status: number;
+  readonly code: string;
 
-  constructor(status: number, message: string) {
+  constructor(status: number, message: string, code = 'HTTP_ERROR') {
     super(message);
     this.name = 'ApiError';
     this.status = status;
+    this.code = code;
   }
+}
+
+async function toApiError(response: Response): Promise<ApiError> {
+  try {
+    const body = (await response.json()) as Partial<ErrorEnvelope>;
+    if (body.error?.message) {
+      return new ApiError(response.status, body.error.message, body.error.code);
+    }
+  } catch {
+    // The body was not JSON; fall through to the generic message.
+  }
+
+  return new ApiError(response.status, `Request failed with status ${response.status}.`);
 }
 
 export async function fetchHealth(signal?: AbortSignal): Promise<HealthResponse> {
@@ -24,9 +61,27 @@ export async function fetchHealth(signal?: AbortSignal): Promise<HealthResponse>
     signal,
   });
 
-  if (!response.ok) {
-    throw new ApiError(response.status, `Health check failed with status ${response.status}.`);
+  // 503 carries a valid readiness body: the API is up but degraded.
+  // Surfacing that payload is more useful than throwing it away.
+  if (response.status !== 200 && response.status !== 503) {
+    throw await toApiError(response);
   }
 
   return (await response.json()) as HealthResponse;
+}
+
+export async function fetchOwner(signal?: AbortSignal): Promise<OwnerResponse> {
+  const response = await fetch('/api/v1/me', {
+    method: 'GET',
+    headers: {
+      Accept: 'application/json',
+    },
+    signal,
+  });
+
+  if (!response.ok) {
+    throw await toApiError(response);
+  }
+
+  return (await response.json()) as OwnerResponse;
 }

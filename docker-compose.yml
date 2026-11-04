@@ -37,18 +37,16 @@ services:
       PYTHONDONTWRITEBYTECODE: "1"
     command:
       [
-        "uvicorn",
-        "app.main:app",
-        "--host",
-        "0.0.0.0",
-        "--port",
-        "8000",
-        "--reload",
+        "sh",
+        "-c",
+        "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload",
       ]
     ports:
       - "${API_PORT:-8000}:8000"
     volumes:
       - ./services/api/app:/app/app
+      - ./services/api/migrations:/app/migrations
+      - ./services/api/alembic.ini:/app/alembic.ini:ro
       - uploads:/data/uploads
     depends_on:
       db:

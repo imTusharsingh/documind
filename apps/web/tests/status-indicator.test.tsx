@@ -14,3 +14,9 @@ test('renders an offline status with its label', () => {
 
   expect(screen.getByRole('status')).toHaveTextContent('API unreachable');
 });
+
+test('renders a degraded status with its label', () => {
+  render(<StatusIndicator status="degraded" label="Database degraded" />);
+
+  expect(screen.getByRole('status')).toHaveTextContent('Database degraded');
+});

@@ -1,9 +1,10 @@
 import { cn } from '@/lib/utils';
 
-export type Status = 'checking' | 'offline' | 'online';
+export type Status = 'checking' | 'degraded' | 'offline' | 'online';
 
 const dotStyles: Record<Status, string> = {
   checking: 'bg-warning',
+  degraded: 'bg-warning',
   offline: 'bg-error',
   online: 'bg-success',
 };

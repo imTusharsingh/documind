@@ -7,10 +7,11 @@ import {
   RefreshCw,
   Server,
   Sparkles,
+  UserRound,
 } from 'lucide-react';
 
 import { StatusIndicator, type Status } from '@/components/status-indicator';
-import { fetchHealth } from '@/lib/api';
+import { fetchHealth, fetchOwner } from '@/lib/api';
 
 const nextMilestones = [
   {
@@ -37,29 +38,56 @@ export function SystemStatusPage() {
     refetchInterval: 30_000,
   });
 
+  const ownerQuery = useQuery({
+    queryKey: ['owner'],
+    queryFn: ({ signal }) => fetchOwner(signal),
+  });
+
+  const database = healthQuery.data?.dependencies.database;
+
   const apiStatus: Status = healthQuery.isPending
     ? 'checking'
     : healthQuery.isError
       ? 'offline'
-      : 'online';
+      : healthQuery.data.status === 'ok'
+        ? 'online'
+        : 'degraded';
 
   const apiLabel = healthQuery.isPending
     ? 'Checking API'
     : healthQuery.isError
       ? 'API unreachable'
-      : 'API online';
+      : healthQuery.data.status === 'ok'
+        ? 'API online'
+        : 'API degraded';
+
+  const databaseStatus: Status = healthQuery.isPending
+    ? 'checking'
+    : healthQuery.isError
+      ? 'offline'
+      : database?.status === 'up'
+        ? 'online'
+        : 'degraded';
+
+  const databaseLabel = healthQuery.isPending
+    ? 'Checking database'
+    : healthQuery.isError
+      ? 'Not checked'
+      : database?.status === 'up'
+        ? 'Database connected'
+        : 'Database unavailable';
 
   return (
     <div className="space-y-6">
       <header>
         <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1 text-xs font-medium text-muted">
           <span className="size-1.5 rounded-full bg-primary" aria-hidden="true" />
-          Milestone 0
+          Milestone 1
         </div>
         <h1 className="text-2xl font-semibold leading-8 tracking-[-0.02em]">System readiness</h1>
         <p className="mt-1 max-w-2xl text-sm leading-[22px] text-muted">
-          DocuMind is running locally. This screen verifies the web application, API, and
-          containerized development environment before product features are added.
+          DocuMind is running locally. This screen verifies the web application, the API, and its
+          PostgreSQL connection before product features are added.
         </p>
       </header>
 
@@ -109,6 +137,20 @@ export function SystemStatusPage() {
               </div>
             </dl>
           ) : null}
+
+          <div className="mt-5 space-y-3 border-t border-border pt-5">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <StatusIndicator status={databaseStatus} label={databaseLabel} />
+              {database?.latency_ms != null ? (
+                <span className="font-mono text-[11px] text-muted">{database.latency_ms} ms</span>
+              ) : null}
+            </div>
+            {database?.error ? (
+              <p className="rounded-md border border-error/20 bg-error/5 px-3 py-2 text-xs leading-5 text-error">
+                {database.error}
+              </p>
+            ) : null}
+          </div>
 
           {healthQuery.isError ? (
             <p className="mt-5 rounded-md border border-error/20 bg-error/5 px-3 py-2 text-xs leading-5 text-error">
@@ -170,23 +212,79 @@ export function SystemStatusPage() {
               <div>
                 <p className="text-sm font-medium">PostgreSQL + pgvector</p>
                 <p className="mt-0.5 text-xs leading-5 text-muted">
-                  Database container with the vector extension enabled
+                  Schema managed by Alembic, applied when the API starts
                 </p>
               </div>
             </li>
           </ul>
 
-          <p className="mt-5 border-t border-border pt-4 text-xs leading-5 text-muted">
-            The status above reflects the API response. Database connectivity is added in
-            Milestone 1.
-          </p>
+          <div className="mt-5 space-y-2 border-t border-border pt-4">
+            <p className="flex items-center justify-between gap-3 text-xs leading-5 text-muted">
+              <span>Liveness</span>
+              <code className="font-mono">/health/live</code>
+            </p>
+            <p className="flex items-center justify-between gap-3 text-xs leading-5 text-muted">
+              <span>Readiness</span>
+              <code className="font-mono">/health</code>
+            </p>
+          </div>
         </article>
+      </section>
+
+      <section className="rounded-lg border border-border bg-surface p-6">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <div className="flex size-10 items-center justify-center rounded-md border border-border bg-background text-primary">
+              <UserRound aria-hidden="true" size={18} strokeWidth={2} />
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold leading-7">Workspace owner</h2>
+              <p className="mt-1 max-w-xl text-sm leading-[22px] text-muted">
+                Read from PostgreSQL. The seeded development owner is the single identity used by
+                the MVP until authentication is added.
+              </p>
+            </div>
+          </div>
+          <StatusIndicator
+            status={ownerQuery.isError ? 'offline' : ownerQuery.isPending ? 'checking' : 'online'}
+            label={
+              ownerQuery.isError ? 'Owner unavailable' : ownerQuery.isPending ? 'Loading' : 'Managed'
+            }
+          />
+        </div>
+
+        {ownerQuery.data ? (
+          <dl className="mt-5 grid gap-4 border-t border-border pt-5 sm:grid-cols-3">
+            <div>
+              <dt className="text-xs font-medium text-muted">Name</dt>
+              <dd className="mt-1 text-sm font-medium">{ownerQuery.data.display_name}</dd>
+            </div>
+            <div>
+              <dt className="text-xs font-medium text-muted">Email</dt>
+              <dd className="mt-1 truncate text-sm">{ownerQuery.data.email}</dd>
+            </div>
+            <div>
+              <dt className="text-xs font-medium text-muted">Seeded</dt>
+              <dd className="mt-1 font-mono text-xs text-muted">
+                {ownerQuery.data.created_at.slice(0, 10)} · {ownerQuery.data.id.slice(0, 8)}
+              </dd>
+            </div>
+          </dl>
+        ) : null}
+
+        {ownerQuery.isError ? (
+          <p className="mt-5 rounded-md border border-error/20 bg-error/5 px-3 py-2 text-xs leading-5 text-error">
+            {ownerQuery.error instanceof Error
+              ? ownerQuery.error.message
+              : 'The owner record could not be loaded.'}
+          </p>
+        ) : null}
       </section>
 
       <section className="rounded-lg border border-border bg-surface p-6">
         <h2 className="text-lg font-semibold leading-7">What comes next</h2>
         <p className="mt-1 text-sm leading-[22px] text-muted">
-          Product functionality is intentionally deferred until the foundation is verified.
+          Product functionality is intentionally deferred until the data foundation is verified.
         </p>
 
         <div className="mt-5 grid gap-3 md:grid-cols-3">
@@ -198,7 +296,7 @@ export function SystemStatusPage() {
                 <div className="flex items-center justify-between">
                   <Icon aria-hidden="true" size={16} className="text-muted" />
                   <span className="font-mono text-[11px] text-muted">
-                    {String(index + 1).padStart(2, '0')}
+                    {String(index + 2).padStart(2, '0')}
                   </span>
                 </div>
                 <p className="mt-4 text-sm font-medium">{milestone.title}</p>
