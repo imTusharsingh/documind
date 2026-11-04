@@ -1,5 +1,5 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { AlertCircle, BarChart3, Check, LoaderCircle, Play } from 'lucide-react';
+import { AlertCircle, BarChart3, Check, Download, LoaderCircle, Play } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 
 import {
@@ -10,6 +10,7 @@ import {
   fetchEvaluationTrend,
   runEvaluation,
   runEvaluationDataset,
+  type EvaluationDraftCase,
 } from '@/lib/api';
 
 function errorMessage(error: unknown): string {
@@ -29,6 +30,10 @@ export function EvaluationPage() {
   const [datasetName, setDatasetName] = useState('My retrieval set');
   const [runLabel, setRunLabel] = useState('');
   const [embeddingModel, setEmbeddingModel] = useState('');
+  const [minimumRecall, setMinimumRecall] = useState('');
+  const [minimumMrr, setMinimumMrr] = useState('');
+  const [minimumPageMatch, setMinimumPageMatch] = useState('');
+  const [additionalCases, setAdditionalCases] = useState<EvaluationDraftCase[]>([]);
   const [selectedDatasetId, setSelectedDatasetId] = useState<string | null>(null);
   const datasetsQuery = useQuery({ queryKey: ['evaluation-datasets'], queryFn: () => fetchEvaluationDatasets() });
   const trendQuery = useQuery({
@@ -40,7 +45,14 @@ export function EvaluationPage() {
     mutationFn: () => runEvaluation(question.trim(), documentId, Number(pageNumber)),
   });
   const createDatasetMutation = useMutation({
-    mutationFn: () => createEvaluationDataset(datasetName.trim(), question.trim(), documentId, Number(pageNumber)),
+    mutationFn: () => createEvaluationDataset(datasetName.trim(), [
+      { question: question.trim(), documentId, pageNumber: Number(pageNumber) },
+      ...additionalCases,
+    ], {
+      recall: minimumRecall ? Number(minimumRecall) / 100 : undefined,
+      mrr: minimumMrr ? Number(minimumMrr) / 100 : undefined,
+      pageMatch: minimumPageMatch ? Number(minimumPageMatch) / 100 : undefined,
+    }),
     onSuccess: () => datasetsQuery.refetch(),
   });
   const runDatasetMutation = useMutation({
@@ -48,6 +60,7 @@ export function EvaluationPage() {
     onSuccess: () => datasetsQuery.refetch(),
   });
   const readyDocuments = (documentsQuery.data ?? []).filter((document) => document.status === 'ready');
+  const additionalCasesValid = additionalCases.every((item) => item.question.trim() && item.documentId && item.pageNumber > 0);
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -59,11 +72,11 @@ export function EvaluationPage() {
       <header>
         <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1 text-xs font-medium text-muted">
           <span className="size-1.5 rounded-full bg-primary" aria-hidden="true" />
-          Milestone 7
+          Milestone 8
         </div>
         <h1 className="text-2xl font-semibold leading-8 tracking-[-0.02em]">Evaluate retrieval</h1>
         <p className="mt-1 max-w-2xl text-sm leading-[22px] text-muted">
-          Save reusable question sets, rerun them after retrieval changes, and compare quality over time.
+          Build multi-case evaluation sets, export reports, and catch quality regressions before they ship.
         </p>
       </header>
 
@@ -116,7 +129,13 @@ export function EvaluationPage() {
             <label htmlFor="evaluation-dataset-name" className="text-xs font-medium text-muted">Save as dataset</label>
             <div className="mt-1 flex gap-2">
               <input id="evaluation-dataset-name" value={datasetName} onChange={(event) => setDatasetName(event.target.value)} className="h-10 min-w-0 flex-1 rounded-md border border-border bg-background px-3 text-sm outline-none focus:border-primary" />
-              <button type="button" onClick={() => createDatasetMutation.mutate()} disabled={!datasetName.trim() || !question.trim() || !documentId || createDatasetMutation.isPending} className="h-10 rounded-md border border-border px-3 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-50">Save dataset</button>
+              <button type="button" onClick={() => createDatasetMutation.mutate()} disabled={!datasetName.trim() || !question.trim() || !documentId || !additionalCasesValid || createDatasetMutation.isPending} className="h-10 rounded-md border border-border px-3 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-50">Save dataset</button>
+            </div>
+          </div>
+          <div className="border-t border-border pt-4">
+            <div className="flex items-center justify-between"><p className="text-xs font-medium text-muted">Additional cases</p><button type="button" onClick={() => setAdditionalCases((current) => [...current, { question: '', documentId: '', pageNumber: 1 }])} className="text-xs font-medium text-primary">+ Add case</button></div>
+            <div className="mt-3 space-y-3">
+              {additionalCases.map((item, index) => <div key={index} className="grid gap-2 rounded-md border border-border p-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_90px_auto]"><input aria-label={`Additional question ${index + 1}`} value={item.question} onChange={(event) => setAdditionalCases((current) => current.map((caseItem, caseIndex) => caseIndex === index ? { ...caseItem, question: event.target.value } : caseItem))} placeholder="Question" className="h-9 rounded-md border border-border bg-background px-3 text-sm outline-none focus:border-primary" /><select aria-label={`Additional document ${index + 1}`} value={item.documentId} onChange={(event) => setAdditionalCases((current) => current.map((caseItem, caseIndex) => caseIndex === index ? { ...caseItem, documentId: event.target.value } : caseItem))} className="h-9 rounded-md border border-border bg-background px-2 text-sm outline-none focus:border-primary"><option value="">Expected document</option>{readyDocuments.map((document) => <option key={document.id} value={document.id}>{document.original_filename}</option>)}</select><input aria-label={`Additional page ${index + 1}`} type="number" min="1" value={item.pageNumber} onChange={(event) => setAdditionalCases((current) => current.map((caseItem, caseIndex) => caseIndex === index ? { ...caseItem, pageNumber: Number(event.target.value) } : caseItem))} className="h-9 rounded-md border border-border bg-background px-3 text-sm outline-none focus:border-primary" /><button type="button" onClick={() => setAdditionalCases((current) => current.filter((_, caseIndex) => caseIndex !== index))} className="text-xs text-error">Remove</button></div>)}
             </div>
           </div>
           <div className="grid gap-4 border-t border-border pt-4 sm:grid-cols-2">
@@ -127,6 +146,14 @@ export function EvaluationPage() {
             <div>
               <label htmlFor="evaluation-embedding-model" className="text-xs font-medium text-muted">Embedding model</label>
               <input id="evaluation-embedding-model" value={embeddingModel} onChange={(event) => setEmbeddingModel(event.target.value)} placeholder="text-embedding-3-small" className="mt-1 h-10 w-full rounded-md border border-border bg-background px-3 text-sm outline-none focus:border-primary" />
+            </div>
+          </div>
+          <div className="border-t border-border pt-4">
+            <p className="text-xs font-medium text-muted">Regression thresholds (%)</p>
+            <div className="mt-1 grid gap-3 sm:grid-cols-3">
+              <input aria-label="Minimum Recall threshold" type="number" min="0" max="100" placeholder="Recall@k" value={minimumRecall} onChange={(event) => setMinimumRecall(event.target.value)} className="h-10 rounded-md border border-border bg-background px-3 text-sm outline-none focus:border-primary" />
+              <input aria-label="Minimum MRR threshold" type="number" min="0" max="100" placeholder="MRR" value={minimumMrr} onChange={(event) => setMinimumMrr(event.target.value)} className="h-10 rounded-md border border-border bg-background px-3 text-sm outline-none focus:border-primary" />
+              <input aria-label="Minimum page-match threshold" type="number" min="0" max="100" placeholder="Page match" value={minimumPageMatch} onChange={(event) => setMinimumPageMatch(event.target.value)} className="h-10 rounded-md border border-border bg-background px-3 text-sm outline-none focus:border-primary" />
             </div>
           </div>
         </form>
@@ -168,10 +195,11 @@ export function EvaluationPage() {
               <div><h3 className="text-sm font-medium">{dataset.name}</h3><p className="mt-1 text-xs text-muted">{dataset.case_count} case{dataset.case_count === 1 ? '' : 's'} · {dataset.run_count} historical run{dataset.run_count === 1 ? '' : 's'}</p></div>
               <div className="flex items-center gap-2">
                 <button type="button" onClick={() => setSelectedDatasetId(selectedDatasetId === dataset.id ? null : dataset.id)} className="h-9 rounded-md border border-border px-3 text-xs font-medium">{selectedDatasetId === dataset.id ? 'Hide trend' : 'View trend'}</button>
+                <a href={`/api/v1/evaluation/datasets/${encodeURIComponent(dataset.id)}/report?format=csv`} download className="inline-flex h-9 items-center gap-2 rounded-md border border-border px-3 text-xs font-medium"><Download aria-hidden="true" size={13} />CSV</a>
                 <button type="button" onClick={() => runDatasetMutation.mutate(dataset.id)} disabled={runDatasetMutation.isPending} className="inline-flex h-9 items-center gap-2 rounded-md bg-primary px-3 text-xs font-medium text-white disabled:opacity-50"><Play aria-hidden="true" size={13} />Run again</button>
               </div>
             </div>
-            {dataset.latest_run ? <p className="mt-4 text-xs text-muted">Latest: Recall@k {percentage(dataset.latest_run.recall_at_k)} · MRR {dataset.latest_run.mean_reciprocal_rank.toFixed(2)} · Page match {percentage(dataset.latest_run.page_match_rate)}</p> : <p className="mt-4 text-xs text-muted">No runs yet.</p>}
+            {dataset.latest_run ? <p className="mt-4 text-xs text-muted">Latest: Recall@k {percentage(dataset.latest_run.recall_at_k)} · MRR {dataset.latest_run.mean_reciprocal_rank.toFixed(2)} · Page match {percentage(dataset.latest_run.page_match_rate)} · {dataset.latest_run.regression_passed === false ? 'Regression failed' : 'Thresholds passed'}</p> : <p className="mt-4 text-xs text-muted">No runs yet.</p>}
             {selectedDatasetId === dataset.id && trendQuery.data?.runs.length ? <div className="mt-4 space-y-2 border-t border-border pt-4"><p className="text-xs font-medium text-muted">Quality trend</p><div className="flex h-20 items-end gap-2">{trendQuery.data.runs.map((run) => <div key={run.id} className="group flex h-full flex-1 flex-col justify-end gap-1" title={`${run.label ?? 'Run'} · Recall@k ${percentage(run.recall_at_k)}`}><div className="rounded-t-sm bg-primary/80 transition-colors group-hover:bg-primary" style={{ height: `${Math.max(8, run.recall_at_k * 100)}%` }} /><span className="truncate text-center text-[10px] text-muted">{run.label ?? 'Run'}</span></div>)}</div></div> : null}
           </article>
         ))}

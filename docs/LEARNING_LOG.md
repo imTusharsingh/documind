@@ -596,7 +596,37 @@ Quality metrics are only comparable when the retrieval configuration is visible.
 9. How would you add confidence intervals for small datasets?
 10. When should a run be marked incomparable with another run?
 
-### Next milestone
+## Milestone 8 — Evaluation reports and regression thresholds
 
-Milestone 8 will add exportable evaluation reports, regression thresholds, and richer multi-case editing.
+**Date:** 2026-11-04
+
+### What was built
+
+- Dataset-level minimum Recall@k, MRR, and page-match thresholds
+- Persisted regression pass/fail status and failure details on each run
+- JSON and CSV evaluation report endpoints
+- Multi-case dataset authoring with add/remove case controls and threshold inputs
+- Downloadable report links and regression status in the Evaluation UI
+- Migration, API, frontend, and integration coverage for report generation
+
+### Concepts learned
+
+Regression detection turns evaluation from a diagnostic screen into a repeatable quality gate. Thresholds belong to the dataset because they describe acceptance criteria for that test suite; the run stores the result observed against those criteria. JSON preserves structured data for tools, while CSV supports quick offline inspection. Persisting failure details makes a historical report understandable even when the dataset is edited later.
+
+### Interview questions
+
+1. Why should regression thresholds be stored on the dataset?
+2. Why persist both a boolean regression result and failure details?
+3. How should a missing threshold affect a run?
+4. What are the trade-offs between JSON and CSV exports?
+5. Why must report generation remain owner-scoped?
+6. How would you make a regression report suitable for CI?
+7. What validation is needed when adding multiple evaluation cases?
+8. Why should historical run results remain immutable?
+9. How would you version thresholds if acceptance criteria change?
+10. What additional metadata makes an exported run reproducible?
+
+### Roadmap status
+
+The planned DocuMind milestone roadmap is complete through Milestone 8. Future improvements are intentionally left open for authentication, OCR, richer evaluation comparisons, and production observability.
 

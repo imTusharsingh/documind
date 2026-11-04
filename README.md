@@ -2,9 +2,9 @@
 
 DocuMind is an AI-powered document research assistant. This repository is being built incrementally as a learning project covering FastAPI, PostgreSQL, pgvector, RAG, Docker, and production-quality frontend engineering.
 
-**Current status:** Milestone 7 complete — editable evaluation datasets and quality trends.
+**Current status:** Milestone 8 complete — exportable evaluation reports and regression thresholds.
 
-![DocuMind Milestone 7](docs/screenshots/milestone-7.png)
+![DocuMind Milestone 8](docs/screenshots/milestone-8.png)
 
 ## What works today
 
@@ -28,6 +28,7 @@ DocuMind is an AI-powered document research assistant. This repository is being 
 - Stateless retrieval evaluation with Recall@k, MRR, and page-match metrics
 - Persistent owner-scoped evaluation datasets with historical quality comparisons
 - Editable datasets, labeled runs, embedding metadata, and quality trend reporting
+- Multi-case dataset authoring with regression thresholds and JSON/CSV evaluation reports
 - Docker Compose for the web app, API, worker, and database, with health checks
 - **Rstest** + React Testing Library component tests
 - Pytest integration tests against a real PostgreSQL database
@@ -194,6 +195,6 @@ documind/
 - Evaluation datasets store expected document/page sources; runs store metrics, labels, embedding metadata, and retrieved sources for comparison.
 - No secrets are present in the frontend. The OpenAI key belongs in the backend `.env` only.
 
-## Next milestone
+## Roadmap status
 
-Milestone 8 will add multi-case dataset editing in the UI, exportable reports, and regression thresholds.
+The planned milestone roadmap is complete through Milestone 8. Future work can extend the product with authentication, OCR, richer comparison charts, and production observability.

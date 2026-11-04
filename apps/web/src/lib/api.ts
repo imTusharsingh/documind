@@ -100,6 +100,8 @@ export interface EvaluationRunSummary {
   page_match_rate: number;
   label: string | null;
   embedding_model: string | null;
+  regression_passed: boolean | null;
+  regression_failures: string[] | null;
   created_at: string;
 }
 
@@ -112,11 +114,20 @@ export interface EvaluationDataset {
   latest_run: EvaluationRunSummary | null;
   created_at: string;
   updated_at: string;
+  minimum_recall_at_k: number | null;
+  minimum_mrr: number | null;
+  minimum_page_match_rate: number | null;
 }
 
 export interface EvaluationDatasetDetail extends EvaluationDataset {
   cases: { question: string; expected_sources: { document_id: string; page_number: number }[] }[];
   runs: EvaluationRunSummary[];
+}
+
+export interface EvaluationDraftCase {
+  question: string;
+  documentId: string;
+  pageNumber: number;
 }
 
 export interface PersistentEvaluationResponse extends EvaluationRunSummary {
@@ -127,6 +138,12 @@ export interface PersistentEvaluationResponse extends EvaluationRunSummary {
 export interface EvaluationTrendResponse {
   dataset_id: string;
   runs: EvaluationRunSummary[];
+}
+
+export interface EvaluationReportResponse {
+  dataset: EvaluationDataset;
+  runs: EvaluationRunSummary[];
+  generated_at: string;
 }
 
 interface ErrorEnvelope {
@@ -314,14 +331,19 @@ export async function fetchEvaluationDatasets(signal?: AbortSignal): Promise<Eva
 
 export async function createEvaluationDataset(
   name: string,
-  question: string,
-  documentId: string,
-  pageNumber: number,
+  cases: EvaluationDraftCase[],
+  thresholds?: { recall?: number; mrr?: number; pageMatch?: number },
 ): Promise<EvaluationDatasetDetail> {
   const response = await fetch('/api/v1/evaluation/datasets', {
     method: 'POST',
     headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name, cases: [{ question, expected_sources: [{ document_id: documentId, page_number: pageNumber }] }] }),
+    body: JSON.stringify({
+      name,
+      cases: cases.map((item) => ({ question: item.question, expected_sources: [{ document_id: item.documentId, page_number: item.pageNumber }] })),
+      minimum_recall_at_k: thresholds?.recall ?? null,
+      minimum_mrr: thresholds?.mrr ?? null,
+      minimum_page_match_rate: thresholds?.pageMatch ?? null,
+    }),
   });
   if (!response.ok) throw await toApiError(response);
   return (await response.json()) as EvaluationDatasetDetail;
@@ -361,4 +383,12 @@ export async function fetchEvaluationTrend(datasetId: string): Promise<Evaluatio
   });
   if (!response.ok) throw await toApiError(response);
   return (await response.json()) as EvaluationTrendResponse;
+}
+
+export async function fetchEvaluationReport(datasetId: string): Promise<EvaluationReportResponse> {
+  const response = await fetch(`/api/v1/evaluation/datasets/${encodeURIComponent(datasetId)}/report`, {
+    headers: { Accept: 'application/json' },
+  });
+  if (!response.ok) throw await toApiError(response);
+  return (await response.json()) as EvaluationReportResponse;
 }

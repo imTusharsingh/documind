@@ -193,6 +193,10 @@ Updates the dataset name, description, and optionally replaces its cases after v
 
 Returns chronological run summaries for the dataset, including labels, embedding metadata, and quality metrics for trend comparisons.
 
+### `GET /api/v1/evaluation/datasets/{dataset_id}/report`
+
+Returns an exportable evaluation report containing dataset thresholds, run summaries, and regression failures. Pass `?format=csv` to download a flattened CSV report for offline analysis. A run records `regression_passed` and `regression_failures` when thresholds are configured.
+
 ### Document lifecycle
 
 ```text
@@ -246,6 +250,4 @@ The frontend relies on `error.code`, not on message text, so wording can change 
 
 ## Future endpoints
 
-| Method | Path | Purpose | Milestone |
-| --- | --- | --- | --- |
-| `PATCH` | `/evaluation/datasets/{dataset_id}` | Edit a saved dataset | 7 |
+The planned API surface is complete through Milestone 8. Future endpoints will be added as product requirements emerge.

@@ -74,3 +74,5 @@ Results are returned to the frontend and can be inspected in the Evaluation page
 Persistent evaluation data is deliberately separate from production document chunks: a dataset records the test intent, while each run records the retrieval configuration and observed results. This makes a run reproducible enough to compare changes without mutating older evidence.
 
 Milestone 7 adds explicit run labels and embedding-model metadata so a chart can compare retrieval configurations without treating two runs as equivalent. Dataset edits replace the case snapshot for future runs; existing run records remain immutable.
+
+Milestone 8 adds dataset-level regression thresholds and exportable reports. Each run evaluates Recall@k, MRR, and page-match thresholds when configured, then persists pass/fail status and failure details. The API exposes the same report as structured JSON or a flattened CSV download for UI, offline, and CI workflows.

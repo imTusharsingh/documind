@@ -75,6 +75,7 @@ def test_persistent_dataset_saves_cases_and_historical_run(
         "/api/v1/evaluation/datasets",
         json={
             "name": "Quality checks",
+            "minimum_recall_at_k": 0.9,
             "cases": [
                 {
                     "question": "What is retrieval quality?",
@@ -94,6 +95,7 @@ def test_persistent_dataset_saves_cases_and_historical_run(
     assert run.json()["recall_at_k"] == 1.0
     assert run.json()["label"] == "baseline"
     assert run.json()["embedding_model"] == "test-embedder"
+    assert run.json()["regression_passed"] is True
     assert len(run.json()["results"]) == 1
 
     detail = client.get(f"/api/v1/evaluation/datasets/{dataset_id}")
@@ -103,3 +105,11 @@ def test_persistent_dataset_saves_cases_and_historical_run(
     trend = client.get(f"/api/v1/evaluation/datasets/{dataset_id}/trend")
     assert trend.status_code == 200
     assert trend.json()["runs"][0]["label"] == "baseline"
+
+    report = client.get(f"/api/v1/evaluation/datasets/{dataset_id}/report")
+    assert report.status_code == 200
+    assert report.json()["dataset"]["minimum_recall_at_k"] == 0.9
+
+    csv_report = client.get(f"/api/v1/evaluation/datasets/{dataset_id}/report?format=csv")
+    assert csv_report.status_code == 200
+    assert "regression_passed" in csv_report.text

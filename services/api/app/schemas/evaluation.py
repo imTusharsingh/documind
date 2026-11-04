@@ -69,6 +69,8 @@ class EvaluationRunSummary(BaseModel):
     page_match_rate: float
     label: str | None
     embedding_model: str | None
+    regression_passed: bool | None
+    regression_failures: list[str] | None
     created_at: str
 
 
@@ -76,6 +78,9 @@ class EvaluationDatasetCreate(BaseModel):
     name: str = Field(min_length=1, max_length=120)
     description: str | None = Field(default=None, max_length=500)
     cases: list[EvaluationCase] = Field(min_length=1, max_length=100)
+    minimum_recall_at_k: float | None = Field(default=None, ge=0.0, le=1.0)
+    minimum_mrr: float | None = Field(default=None, ge=0.0, le=1.0)
+    minimum_page_match_rate: float | None = Field(default=None, ge=0.0, le=1.0)
 
     @field_validator("name")
     @classmethod
@@ -90,6 +95,9 @@ class EvaluationDatasetUpdate(BaseModel):
     name: str | None = Field(default=None, min_length=1, max_length=120)
     description: str | None = Field(default=None, max_length=500)
     cases: list[EvaluationCase] | None = Field(default=None, min_length=1, max_length=100)
+    minimum_recall_at_k: float | None = Field(default=None, ge=0.0, le=1.0)
+    minimum_mrr: float | None = Field(default=None, ge=0.0, le=1.0)
+    minimum_page_match_rate: float | None = Field(default=None, ge=0.0, le=1.0)
 
     @field_validator("name")
     @classmethod
@@ -116,6 +124,9 @@ class EvaluationDatasetSummary(BaseModel):
     latest_run: EvaluationRunSummary | None
     created_at: str
     updated_at: str
+    minimum_recall_at_k: float | None
+    minimum_mrr: float | None
+    minimum_page_match_rate: float | None
 
 
 class EvaluationDatasetDetail(EvaluationDatasetSummary):
@@ -126,3 +137,9 @@ class EvaluationDatasetDetail(EvaluationDatasetSummary):
 class EvaluationRunResponse(EvaluationRunSummary):
     dataset_id: uuid.UUID
     results: list[EvaluationCaseResult]
+
+
+class EvaluationReportResponse(BaseModel):
+    dataset: EvaluationDatasetSummary
+    runs: list[EvaluationRunSummary]
+    generated_at: str

@@ -1,7 +1,9 @@
 import uuid
+from datetime import UTC, datetime
+from io import StringIO
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Response, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 
@@ -24,6 +26,7 @@ from app.schemas.evaluation import (
     EvaluationDatasetDetail,
     EvaluationDatasetSummary,
     EvaluationDatasetUpdate,
+    EvaluationReportResponse,
     EvaluationRunRequest,
     EvaluationRunResponse,
     EvaluationRunSummary,
@@ -62,6 +65,8 @@ def _run_summary(run: EvaluationRun) -> EvaluationRunSummary:
         page_match_rate=run.page_match_rate,
         label=run.label,
         embedding_model=run.embedding_model,
+        regression_passed=run.regression_passed,
+        regression_failures=run.regression_failures,
         created_at=run.created_at.isoformat(),
     )
 
@@ -77,6 +82,9 @@ def _dataset_summary(dataset: EvaluationDataset) -> EvaluationDatasetSummary:
         latest_run=_run_summary(latest) if latest else None,
         created_at=dataset.created_at.isoformat(),
         updated_at=dataset.updated_at.isoformat(),
+        minimum_recall_at_k=dataset.minimum_recall_at_k,
+        minimum_mrr=dataset.minimum_mrr,
+        minimum_page_match_rate=dataset.minimum_page_match_rate,
     )
 
 
@@ -113,6 +121,9 @@ def create_dataset(
         owner_id=owner.id,
         name=request.name,
         description=request.description,
+        minimum_recall_at_k=request.minimum_recall_at_k,
+        minimum_mrr=request.minimum_mrr,
+        minimum_page_match_rate=request.minimum_page_match_rate,
     )
     dataset.cases = [
         EvaluationDatasetCase(
@@ -175,6 +186,12 @@ def update_dataset(
         dataset.name = request.name
     if request.description is not None:
         dataset.description = request.description
+    if request.minimum_recall_at_k is not None:
+        dataset.minimum_recall_at_k = request.minimum_recall_at_k
+    if request.minimum_mrr is not None:
+        dataset.minimum_mrr = request.minimum_mrr
+    if request.minimum_page_match_rate is not None:
+        dataset.minimum_page_match_rate = request.minimum_page_match_rate
     if request.cases is not None:
         _validate_document_ownership(session, owner, request.cases)
         dataset.cases = [
@@ -206,6 +223,50 @@ def dataset_trend(
     return EvaluationTrendResponse(
         dataset_id=dataset.id,
         runs=[_run_summary(run) for run in reversed(dataset.runs)],
+    )
+
+
+@router.get("/evaluation/datasets/{dataset_id}/report", response_model=None)
+def export_report(
+    dataset_id: uuid.UUID,
+    session: Annotated[Session, Depends(get_session)],
+    owner: Annotated[User, Depends(get_current_owner)],
+    format: str = "json",
+) -> EvaluationReportResponse | Response:
+    dataset = _get_dataset(session, owner.id, dataset_id)
+    runs = [_run_summary(run) for run in reversed(dataset.runs)]
+    if format.lower() == "csv":
+        output = StringIO()
+        output.write(
+            "run_id,created_at,label,embedding_model,top_k,min_similarity,"
+            "recall_at_k,mrr,page_match_rate,regression_passed\n"
+        )
+        for run in runs:
+            values = [
+                str(run.id),
+                run.created_at,
+                run.label or "",
+                run.embedding_model or "",
+                str(run.top_k),
+                str(run.min_similarity),
+                str(run.recall_at_k),
+                str(run.mean_reciprocal_rank),
+                str(run.page_match_rate),
+                str(run.regression_passed),
+            ]
+            output.write(",".join('"' + value.replace('"', '""') + '"' for value in values))
+            output.write("\n")
+        return Response(
+            content=output.getvalue(),
+            media_type="text/csv",
+            headers={"Content-Disposition": f'attachment; filename="{dataset.name}-report.csv"'},
+        )
+    if format.lower() != "json":
+        raise NotFoundError("Report format must be json or csv.")
+    return EvaluationReportResponse(
+        dataset=_dataset_summary(dataset),
+        runs=runs,
+        generated_at=datetime.now(UTC).isoformat(),
     )
 
 
@@ -275,7 +336,20 @@ def run_dataset(
         recall_at_k=round(sum(item.recall_at_k for item in results) / count, 6),
         mean_reciprocal_rank=round(sum(item.reciprocal_rank for item in results) / count, 6),
         page_match_rate=round(sum(item.page_match for item in results) / count, 6),
+        regression_passed=True,
+        regression_failures=[],
     )
+    thresholds = [
+        (dataset.minimum_recall_at_k, run.recall_at_k, "Recall@k"),
+        (dataset.minimum_mrr, run.mean_reciprocal_rank, "MRR"),
+        (dataset.minimum_page_match_rate, run.page_match_rate, "Page match rate"),
+    ]
+    run.regression_failures = [
+        f"{metric} {value:.3f} is below threshold {threshold:.3f}"
+        for threshold, value, metric in thresholds
+        if threshold is not None and value < threshold
+    ]
+    run.regression_passed = not run.regression_failures
     run.results = [
         EvaluationRunResult(
             id=uuid.uuid4(),

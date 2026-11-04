@@ -16,6 +16,9 @@ class EvaluationDataset(Base):
     )
     name: Mapped[str] = mapped_column(String(120))
     description: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    minimum_recall_at_k: Mapped[float | None] = mapped_column(nullable=True)
+    minimum_mrr: Mapped[float | None] = mapped_column(nullable=True)
+    minimum_page_match_rate: Mapped[float | None] = mapped_column(nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
@@ -62,6 +65,8 @@ class EvaluationRun(Base):
     page_match_rate: Mapped[float] = mapped_column()
     label: Mapped[str | None] = mapped_column(String(120), nullable=True)
     embedding_model: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    regression_passed: Mapped[bool | None] = mapped_column(nullable=True)
+    regression_failures: Mapped[list[str] | None] = mapped_column(JSON, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     dataset: Mapped[EvaluationDataset] = relationship(back_populates="runs")
