@@ -16,7 +16,7 @@ export default defineConfig({
   },
   html: {
     title: 'DocuMind',
-    favicon: path.resolve(rootDir, 'public/favicon.svg'),
+    favicon: path.resolve(rootDir, 'public/brand/documind-mark.png'),
     meta: {
       description: 'AI-powered document research assistant',
     },

@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import { NavLink } from 'react-router-dom';
 
 import { cn } from '@/lib/utils';
-import { BrandMark } from '@/components/ui';
+import { BrandLockup, BrandMark } from '@/components/ui';
 
 interface AppShellProps {
   children: ReactNode;
@@ -25,11 +25,7 @@ export function AppShell({ children }: AppShellProps) {
       <div className="mx-auto flex min-h-screen w-full max-w-[1440px]">
         <aside className="sticky top-0 hidden h-screen w-64 shrink-0 border-r border-border bg-surface/95 backdrop-blur md:flex md:flex-col">
           <div className="flex h-16 items-center gap-3 border-b border-border px-6">
-            <BrandMark />
-            <div className="min-w-0">
-              <p className="truncate text-sm font-semibold tracking-tight">DocuMind</p>
-              <p className="truncate text-[11px] leading-4 text-muted">Research workspace</p>
-            </div>
+            <BrandLockup className="h-9 max-w-[148px]" />
           </div>
 
           <nav aria-label="Primary" className="flex-1 space-y-1 px-3 py-4">

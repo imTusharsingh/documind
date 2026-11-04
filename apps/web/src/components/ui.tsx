@@ -26,5 +26,9 @@ export function SectionHeading({ title, description, action }: { title: string; 
 }
 
 export function BrandMark({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) {
-  return <span aria-hidden="true" className={cn('inline-flex shrink-0 items-center justify-center rounded-[10px] bg-primary font-bold text-white', size === 'sm' ? 'size-7 text-[11px]' : size === 'lg' ? 'size-11 rounded-[14px] text-lg' : 'size-8 text-xs')}>D</span>;
+  return <img src="/brand/documind-mark.png" alt="" className={cn('shrink-0 object-contain', size === 'sm' ? 'size-7' : size === 'lg' ? 'size-11' : 'size-8')} />;
+}
+
+export function BrandLockup({ className }: { className?: string }) {
+  return <img src="/brand/documind-lockup.png" alt="DocuMind" className={cn('h-8 w-auto object-contain', className)} />;
 }
