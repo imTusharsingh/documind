@@ -123,12 +123,12 @@ export function DocumentsPage() {
         <div>
           <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1 text-xs font-medium text-muted">
             <span className="size-1.5 rounded-full bg-primary" aria-hidden="true" />
-            Milestone 2
+            Milestone 3
           </div>
           <h1 className="text-2xl font-semibold leading-8 tracking-[-0.02em]">Documents</h1>
           <p className="mt-1 max-w-2xl text-sm leading-[22px] text-muted">
             Upload PDFs to the research workspace. A background worker extracts text, splits it
-            into page-aware chunks, and records the result on each document.
+            into page-aware chunks, embeds them, and makes them available for semantic search.
           </p>
         </div>
 

@@ -2,6 +2,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 
 import { AppShell } from '@/components/app-shell';
 import { DocumentsPage } from './documents-page';
+import { SearchPage } from './search-page';
 import { SystemStatusPage } from './system-status-page';
 
 export function AppRouter() {
@@ -21,6 +22,14 @@ export function AppRouter() {
           element={
             <AppShell>
               <DocumentsPage />
+            </AppShell>
+          }
+        />
+        <Route
+          path="/search"
+          element={
+            <AppShell>
+              <SearchPage />
             </AppShell>
           }
         />

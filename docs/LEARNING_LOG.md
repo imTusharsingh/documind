@@ -414,7 +414,51 @@ Observed results:
 14. Why invalidate the documents query after a mutation instead of updating the cached list by hand?
 15. What changes if two workers, then ten, run against the same table?
 
+## Milestone 3 — Embeddings and semantic retrieval
+
+**Date:** 2026-11-04
+
+### What was built
+
+- OpenAI embedding provider with batching, retries, dimension checks, and safe error messages
+- Nullable 1536-dimensional vectors on `document_chunks` through migration `0004`
+- HNSW cosine index for PostgreSQL-side nearest-neighbour search
+- Ingestion now generates vectors before marking a document `ready`
+- `POST /api/v1/search` with owner, readiness, document selection, result count, and similarity filtering
+- Reprocessing endpoint for failed or ready documents
+- Search UI that displays ranked passages with document and page provenance
+
+### Concepts learned
+
+Embedding generation is an external side effect, so it happens after the durable worker claim and before the final database commit. A provider failure marks the document failed instead of leaving a misleading `ready` state. The vector column is nullable for safe migration, while the application only marks documents ready after every chunk has a vector.
+
+The database owns retrieval: cosine distance, owner filtering, readiness filtering, and ordering are one SQL statement. This keeps tenant boundaries enforceable in the query and lets PostgreSQL use the HNSW index as the collection grows.
+
+The provider is hidden behind a small protocol. Tests inject a deterministic local implementation, so batching, persistence, filtering, and ranking are testable without network calls or API keys.
+
+### Verification notes
+
+Ruff checks pass. Backend integration tests require a reachable PostgreSQL instance, and the local environment did not provide one. Chunking tests also require the cached `cl100k_base` tokenizer data; this environment cannot download it because outbound DNS is unavailable. Frontend checks are configured but cannot run here because Node and pnpm are not installed.
+
+### Interview questions
+
+1. Why generate embeddings in the worker instead of inside the upload request?
+2. Why must a document stay non-`ready` until every chunk has a vector?
+3. Why is the embedding column nullable during the migration?
+4. Why is the embedding dimension fixed in the database schema, and what must change if the model dimension changes?
+5. What does cosine distance measure, and why is it converted to a similarity score for the API?
+6. Why does the search query filter by owner and `ready` status inside SQL instead of filtering results in Python?
+7. What is the purpose of the HNSW index, and what trade-off does it introduce?
+8. Why does the provider wrapper batch inputs and validate response order and vector dimensions?
+9. How does the application behave when `OPENAI_API_KEY` is missing during ingestion?
+10. Why should provider errors be logged internally but not returned verbatim to users?
+11. How does `POST /documents/{id}/reprocess` make a failed embedding job recoverable?
+12. Why can old chunks remain temporarily when a ready document is requeued?
+13. How would you test semantic search without calling an external embedding provider?
+14. What happens to existing ready documents when migration `0004` is applied?
+15. What would you measure to decide whether exact search, HNSW search, or a hybrid retrieval strategy is best?
+
 ### Next milestone
 
-Milestone 3 adds embeddings, pgvector storage, and semantic search over document chunks.
+Milestone 4 adds grounded answers with validated page citations and source previews.
 

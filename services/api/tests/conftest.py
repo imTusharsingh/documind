@@ -9,8 +9,11 @@ once per session, and then wraps every test in a transaction that is
 rolled back afterwards so tests cannot leak state into each other.
 """
 
+import hashlib
+import math
 import os
-from collections.abc import Callable, Iterator
+import re
+from collections.abc import Callable, Iterator, Sequence
 from pathlib import Path
 
 import pymupdf
@@ -34,9 +37,42 @@ TEST_DATABASE_URL = os.environ.setdefault(
     "DATABASE_URL", os.getenv("DOCUMIND_TEST_DATABASE_URL", DEFAULT_TEST_DATABASE_URL)
 )
 
+from app.api.deps import get_embedding_provider  # noqa: E402
 from app.core.config import Settings, get_settings  # noqa: E402
 from app.core.db import get_session  # noqa: E402
 from app.main import create_app  # noqa: E402
+from app.services.embeddings import EmbeddingProvider  # noqa: E402
+
+
+class DeterministicEmbeddingProvider(EmbeddingProvider):
+    """Test provider that turns tokens into stable signed-hash vectors.
+
+    It is intentionally not a language model: shared tokens produce
+    similarity, which is enough to exercise storage, SQL ranking, filters,
+    and citation plumbing without any network dependency.
+    """
+
+    def __init__(self, dimensions: int) -> None:
+        self.dimensions = dimensions
+        self.calls: list[list[str]] = []
+
+    def embed_texts(self, texts: Sequence[str]) -> list[list[float]]:
+        self.calls.append(list(texts))
+        return [self._vector(text) for text in texts]
+
+    def _vector(self, text: str) -> list[float]:
+        vector = [0.0] * self.dimensions
+        for token in re.findall(r"[a-z0-9]+", text.lower()):
+            digest = hashlib.sha256(token.encode("utf-8")).digest()
+            index = int.from_bytes(digest[:4], "big") % self.dimensions
+            vector[index] += 1.0 if digest[4] % 2 == 0 else -1.0
+
+        norm = math.sqrt(sum(value * value for value in vector))
+        if norm == 0:
+            vector[0] = 1.0
+            return vector
+
+        return [value / norm for value in vector]
 
 
 def _quote(identifier: str) -> str:
@@ -120,10 +156,20 @@ def test_settings(tmp_path: Path) -> Settings:
 
 
 @pytest.fixture
-def client(session: Session, test_settings: Settings) -> Iterator[TestClient]:
+def fake_embedder() -> DeterministicEmbeddingProvider:
+    return DeterministicEmbeddingProvider(dimensions=1536)
+
+
+@pytest.fixture
+def client(
+    session: Session,
+    test_settings: Settings,
+    fake_embedder: DeterministicEmbeddingProvider,
+) -> Iterator[TestClient]:
     app = create_app()
     app.dependency_overrides[get_session] = lambda: session
     app.dependency_overrides[get_settings] = lambda: test_settings
+    app.dependency_overrides[get_embedding_provider] = lambda: fake_embedder
 
     with TestClient(app) as test_client:
         yield test_client

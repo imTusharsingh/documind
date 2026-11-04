@@ -13,6 +13,7 @@ import time
 from app.core.config import get_settings
 from app.core.db import SessionLocal
 from app.repositories.documents import claim_next_document
+from app.services.embeddings import create_embedding_provider
 from app.services.ingestion import process_document
 
 logger = logging.getLogger("app.workers.ingest")
@@ -26,6 +27,7 @@ def run() -> None:
     )
 
     logger.info("Ingestion worker started; polling every %.1fs", settings.worker_poll_seconds)
+    embedding_provider = create_embedding_provider(settings)
 
     while True:
         document_id = None
@@ -34,7 +36,7 @@ def run() -> None:
                 document_id = claim_next_document(session, settings.worker_stale_after_seconds)
                 if document_id is not None:
                     logger.info("Claimed document %s", document_id)
-                    process_document(session, document_id, settings)
+                    process_document(session, document_id, settings, embedding_provider)
                     logger.info("Finished document %s", document_id)
         except Exception:
             # A transient database failure or a bug in one document must not

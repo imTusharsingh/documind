@@ -1,6 +1,6 @@
 from functools import lru_cache
 
-from pydantic import AliasChoices, Field
+from pydantic import AliasChoices, Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -41,6 +41,23 @@ class Settings(BaseSettings):
 
     worker_poll_seconds: float = 1.0
     worker_stale_after_seconds: int = 300
+
+    openai_api_key: SecretStr = Field(
+        default=SecretStr(""),
+        validation_alias=AliasChoices("OPENAI_API_KEY", "DOCUMIND_OPENAI_API_KEY"),
+    )
+    embedding_model: str = Field(
+        default="text-embedding-3-small",
+        validation_alias=AliasChoices("EMBEDDING_MODEL", "DOCUMIND_EMBEDDING_MODEL"),
+    )
+    embedding_dim: int = Field(
+        default=1536,
+        ge=1,
+        validation_alias=AliasChoices("EMBEDDING_DIM", "DOCUMIND_EMBEDDING_DIM"),
+    )
+    embedding_batch_size: int = Field(default=64, ge=1, le=2048)
+    embedding_timeout_seconds: float = Field(default=30.0, gt=0)
+    embedding_max_retries: int = Field(default=2, ge=0, le=10)
 
     model_config = SettingsConfigDict(
         env_prefix="DOCUMIND_",

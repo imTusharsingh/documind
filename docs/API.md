@@ -120,6 +120,25 @@ Returns one document in the same shape as the upload response. Unknown ids retur
 
 Deletes the document row, cascades to its chunks, and removes the stored PDF. Returns `204 No Content`. Unknown ids return `404 NOT_FOUND`.
 
+### `POST /api/v1/documents/{document_id}/reprocess`
+
+Queues a failed or ready document for extraction, chunking, and embedding again. This is useful after configuring the provider or changing the embedding model. A document currently being processed returns `409 CONFLICT`.
+
+### `POST /api/v1/search`
+
+Embeds a query and returns the closest passages from the owner's ready documents using cosine similarity in pgvector.
+
+```json
+{
+  "query": "What is the revenue outlook?",
+  "limit": 5,
+  "document_ids": [],
+  "min_similarity": 0.2
+}
+```
+
+The response includes the source document, page number, chunk index, passage content, and a similarity score between `0` and `1`. Documents that are pending, processing, or failed are never searched. If the provider is not configured or unavailable, the endpoint returns `503 EMBEDDING_UNAVAILABLE`.
+
 ### Document lifecycle
 
 ```text
@@ -175,7 +194,6 @@ The frontend relies on `error.code`, not on message text, so wording can change 
 
 | Method | Path | Purpose | Milestone |
 | --- | --- | --- | --- |
-| `POST` | `/search` | Semantic search over ready chunks | 3 |
 | `POST` | `/chat` | Ask a grounded question | 4 |
 | `GET` | `/conversations` | List conversations | 4 |
 | `GET` | `/conversations/{id}` | Get a conversation | 4 |

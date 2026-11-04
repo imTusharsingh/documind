@@ -34,6 +34,20 @@ export interface DocumentResponse {
   updated_at: string;
 }
 
+export interface SearchResult {
+  document_id: string;
+  document_name: string;
+  page_number: number;
+  chunk_index: number;
+  content: string;
+  similarity: number;
+}
+
+export interface SearchResponse {
+  query: string;
+  results: SearchResult[];
+}
+
 interface ErrorEnvelope {
   error: {
     code: string;
@@ -147,4 +161,22 @@ export async function deleteDocument(documentId: string): Promise<void> {
   if (!response.ok) {
     throw await toApiError(response);
   }
+}
+
+export async function searchDocuments(query: string, signal?: AbortSignal): Promise<SearchResponse> {
+  const response = await fetch('/api/v1/search', {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ query, limit: 8 }),
+    signal,
+  });
+
+  if (!response.ok) {
+    throw await toApiError(response);
+  }
+
+  return (await response.json()) as SearchResponse;
 }

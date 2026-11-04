@@ -1,10 +1,10 @@
 # RAG pipeline
 
-This document describes the full retrieval-augmented generation pipeline. Milestone 2 implements upload, storage, extraction, chunking, and ingestion status. Embedding, retrieval, and answer generation remain future work, and this document marks the boundary explicitly.
+This document describes the full retrieval-augmented generation pipeline. Milestone 3 implements upload, storage, extraction, chunking, embeddings, and semantic retrieval. Answer generation remains future work.
 
 ## Ingestion
 
-Implemented in Milestone 2:
+Implemented in Milestone 2 and retained in Milestone 3:
 
 1. Validate the uploaded file name, PDF signature, and size while streaming it to disk.
 2. Store the original file on the persistent uploads volume under a server-generated document id.
@@ -16,11 +16,15 @@ Implemented in Milestone 2:
 8. Store chunks with page number, sequential chunk index, content, and token count.
 9. Set the document status to `ready` with `page_count` and `chunk_count` in the same transaction.
 
-Pending in Milestone 3:
+Implemented in Milestone 3:
 
-10. Generate embeddings in batches with the configured provider.
-11. Store vectors alongside each chunk and add a pgvector index.
+10. Generate embeddings in batches with the configured OpenAI provider.
+11. Store 1536-dimensional vectors alongside each chunk and add an HNSW pgvector cosine index.
 12. Extend readiness or failure handling so a document is only `ready` when its vectors exist.
+13. Embed search queries and rank ready chunks with cosine similarity in PostgreSQL.
+14. Filter retrieval by owner, optional document IDs, readiness, result count, and minimum similarity.
+
+The `POST /documents/{id}/reprocess` endpoint requeues ready or failed documents. This makes provider configuration failures recoverable and supports deliberate re-embedding after a model migration.
 
 Chunking within page boundaries keeps citations precise. Cross-page chunks may be evaluated later if retrieval quality requires them.
 

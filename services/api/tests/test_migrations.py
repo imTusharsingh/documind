@@ -5,7 +5,7 @@ def test_migrations_are_at_head(engine: Engine) -> None:
     with engine.connect() as connection:
         version = connection.execute(text("SELECT version_num FROM alembic_version")).scalar()
 
-    assert version == "0003"
+    assert version == "0004"
 
 
 def test_users_table_has_expected_columns(engine: Engine) -> None:
@@ -63,6 +63,14 @@ def test_chunks_are_unique_per_document_and_index(engine: Engine) -> None:
     }
 
     assert "uq_document_chunks_document_id_chunk_index" in names
+
+
+def test_chunks_have_vector_storage_and_similarity_index(engine: Engine) -> None:
+    columns = {column["name"] for column in inspect(engine).get_columns("document_chunks")}
+    indexes = {index["name"] for index in inspect(engine).get_indexes("document_chunks")}
+
+    assert "embedding" in columns
+    assert "ix_document_chunks_embedding_hnsw" in indexes
 
 
 def test_development_owner_is_seeded_once(engine: Engine) -> None:

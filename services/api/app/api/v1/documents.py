@@ -16,6 +16,7 @@ from app.repositories.documents import (
     delete_document,
     get_document,
     list_documents,
+    requeue_document,
 )
 from app.schemas.document import DocumentResponse
 from app.schemas.errors import ErrorResponse
@@ -117,6 +118,28 @@ def read_document(
     owner: Annotated[User, Depends(get_current_owner)],
 ) -> DocumentResponse:
     document = get_document(session, owner.id, document_id)
+    return DocumentResponse.model_validate(document)
+
+
+@router.post(
+    "/{document_id}/reprocess",
+    response_model=DocumentResponse,
+    summary="Reprocess a document",
+    description=(
+        "Queues a failed or ready document for extraction, chunking, and embedding again. "
+        "Useful after fixing provider configuration or changing the embedding model."
+    ),
+    responses={
+        404: {"model": ErrorResponse, "description": "Document not found."},
+        409: {"model": ErrorResponse, "description": "Document is already processing."},
+    },
+)
+def reprocess_document(
+    document_id: uuid.UUID,
+    session: Annotated[Session, Depends(get_session)],
+    owner: Annotated[User, Depends(get_current_owner)],
+) -> DocumentResponse:
+    document = requeue_document(session, owner.id, document_id)
     return DocumentResponse.model_validate(document)
 
 

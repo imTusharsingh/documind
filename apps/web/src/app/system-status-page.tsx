@@ -27,7 +27,8 @@ const milestones = [
     title: 'Embeddings and retrieval',
     description: 'pgvector storage and semantic search over document chunks.',
     icon: Database,
-    state: 'Next',
+    state: 'Available',
+    to: '/search',
   },
   {
     title: 'Grounded answers',
@@ -89,7 +90,7 @@ export function SystemStatusPage() {
         <div>
           <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1 text-xs font-medium text-muted">
             <span className="size-1.5 rounded-full bg-primary" aria-hidden="true" />
-            Milestone 2
+            Milestone 3
           </div>
           <h1 className="text-2xl font-semibold leading-8 tracking-[-0.02em]">System readiness</h1>
           <p className="mt-1 max-w-2xl text-sm leading-[22px] text-muted">
@@ -311,8 +312,8 @@ export function SystemStatusPage() {
       <section className="rounded-lg border border-border bg-surface p-6">
         <h2 className="text-lg font-semibold leading-7">Build progress</h2>
         <p className="mt-1 text-sm leading-[22px] text-muted">
-          Document ingestion is available now. Retrieval and grounded answers build on the stored
-          chunks.
+          Document ingestion and semantic retrieval are available now. Grounded answers build on
+          the stored passages and citations.
         </p>
 
         <div className="mt-5 grid gap-3 md:grid-cols-3">

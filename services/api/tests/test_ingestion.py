@@ -9,6 +9,7 @@ from app.core.config import Settings
 from app.models.document import Document, DocumentChunk, DocumentStatus
 from app.repositories.documents import claim_next_document, create_document
 from app.repositories.users import DEVELOPMENT_OWNER_ID
+from app.services.embeddings import OpenAIEmbeddingProvider
 from app.services.ingestion import process_document
 
 
@@ -35,6 +36,7 @@ def test_process_document_extracts_chunks_and_marks_ready(
     pdf_factory,
     tmp_path: Path,
     test_settings: Settings,
+    fake_embedder,
 ) -> None:
     path = pdf_factory(
         tmp_path / "ingest.pdf",
@@ -42,7 +44,7 @@ def test_process_document_extracts_chunks_and_marks_ready(
     )
     document_id = _create_pending_document(session, path)
 
-    process_document(session, document_id, test_settings)
+    process_document(session, document_id, test_settings, fake_embedder)
 
     session.expire_all()
     document = session.get(Document, document_id)
@@ -62,6 +64,8 @@ def test_process_document_extracts_chunks_and_marks_ready(
     assert [chunk.chunk_index for chunk in chunks] == list(range(len(chunks)))
     assert {chunk.page_number for chunk in chunks} == {1, 2}
     assert all(chunk.token_count > 0 and chunk.content for chunk in chunks)
+    assert all(chunk.embedding is not None for chunk in chunks)
+    assert all(len(chunk.embedding or []) == 1536 for chunk in chunks)
 
 
 def test_scanned_pdf_fails_with_an_explicit_message(
@@ -69,11 +73,12 @@ def test_scanned_pdf_fails_with_an_explicit_message(
     pdf_factory,
     tmp_path: Path,
     test_settings: Settings,
+    fake_embedder,
 ) -> None:
     path = pdf_factory(tmp_path / "scanned.pdf", ["", ""])
     document_id = _create_pending_document(session, path)
 
-    process_document(session, document_id, test_settings)
+    process_document(session, document_id, test_settings, fake_embedder)
 
     session.expire_all()
     document = session.get(Document, document_id)
@@ -146,11 +151,12 @@ def test_chunk_count_matches_stored_rows(
     pdf_factory,
     tmp_path: Path,
     test_settings: Settings,
+    fake_embedder,
 ) -> None:
     path = pdf_factory(tmp_path / "counts.pdf", ["Counted content on a single page."])
     document_id = _create_pending_document(session, path)
 
-    process_document(session, document_id, test_settings)
+    process_document(session, document_id, test_settings, fake_embedder)
 
     session.expire_all()
     document = session.get(Document, document_id)
@@ -161,3 +167,38 @@ def test_chunk_count_matches_stored_rows(
     )
     assert document is not None
     assert document.chunk_count == stored
+
+
+def test_unconfigured_embeddings_fail_the_document_with_a_clear_message(
+    session: Session,
+    pdf_factory,
+    tmp_path: Path,
+    test_settings: Settings,
+) -> None:
+    path = pdf_factory(tmp_path / "needs-key.pdf", ["This document needs embeddings."])
+    document_id = _create_pending_document(session, path)
+    provider = OpenAIEmbeddingProvider(
+        api_key="",
+        model="text-embedding-3-small",
+        dimensions=1536,
+        batch_size=64,
+        timeout_seconds=5,
+        max_retries=0,
+    )
+
+    process_document(session, document_id, test_settings, provider)
+
+    session.expire_all()
+    document = session.get(Document, document_id)
+    assert document is not None
+    assert document.status == DocumentStatus.FAILED
+    assert document.error_message is not None
+    assert "OPENAI_API_KEY" in document.error_message
+    assert document.page_count is None
+
+    remaining = session.scalar(
+        select(func.count())
+        .select_from(DocumentChunk)
+        .where(DocumentChunk.document_id == document_id)
+    )
+    assert remaining == 0

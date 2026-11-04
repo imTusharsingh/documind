@@ -2,7 +2,7 @@
 
 ## Current state
 
-Milestone 2 adds document ingestion. The application accepts PDF uploads, stores them durably, extracts text page by page, splits it into token chunks, and exposes ingestion status through the API and UI. The pipeline is deliberately explicit: no LangChain, no separate vector database, no hidden queue.
+Milestone 3 adds embeddings and semantic retrieval to document ingestion. The application accepts PDF uploads, stores them durably, extracts text page by page, splits it into token chunks, generates vectors, and searches ready passages through pgvector. The pipeline is deliberately explicit: no LangChain, no separate vector database, no hidden queue.
 
 ```text
 Browser
@@ -110,6 +110,7 @@ Alembic reads the database URL from the same settings object the API uses, so th
 - `0001` creates `users`.
 - `0002` seeds the fixed development owner with `ON CONFLICT (id) DO NOTHING`.
 - `0003` creates `documents` and `document_chunks`, including the status check constraint and the `(status, created_at)` index used by the worker claim.
+- `0004` adds the nullable 1536-dimensional `embedding` vector and HNSW cosine index, then requeues existing ready documents for embedding.
 
 The seed lives in a migration rather than in application startup code because it is data the schema depends on, it must be idempotent, and it must apply identically to local and test databases. The owner id is a constant UUID so tests and future seeded data can reference it without a lookup.
 

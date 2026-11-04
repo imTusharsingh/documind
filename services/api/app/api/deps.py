@@ -5,9 +5,11 @@ from typing import Annotated
 from fastapi import Depends
 from sqlalchemy.orm import Session
 
+from app.core.config import Settings, get_settings
 from app.core.db import get_session
 from app.models.user import User
 from app.repositories.users import get_development_owner
+from app.services.embeddings import EmbeddingProvider, create_embedding_provider
 
 
 def get_current_owner(session: Annotated[Session, Depends(get_session)]) -> User:
@@ -18,3 +20,10 @@ def get_current_owner(session: Annotated[Session, Depends(get_session)]) -> User
     added, only this function changes.
     """
     return get_development_owner(session)
+
+
+def get_embedding_provider(
+    settings: Annotated[Settings, Depends(get_settings)],
+) -> EmbeddingProvider:
+    """Return the configured embedding provider for a request."""
+    return create_embedding_provider(settings)

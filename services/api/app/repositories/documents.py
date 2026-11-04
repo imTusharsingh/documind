@@ -6,7 +6,7 @@ from datetime import UTC, datetime, timedelta
 from sqlalchemy import and_, delete, func, or_, select, update
 from sqlalchemy.orm import Session
 
-from app.core.errors import NotFoundError
+from app.core.errors import ConflictError, NotFoundError
 from app.models.document import Document, DocumentChunk, DocumentStatus
 
 
@@ -66,6 +66,29 @@ def delete_document(session: Session, owner_id: uuid.UUID, document_id: uuid.UUI
     return document
 
 
+def requeue_document(session: Session, owner_id: uuid.UUID, document_id: uuid.UUID) -> Document:
+    """Move a document back to pending so a worker reprocesses it.
+
+    This is used after a configuration or provider failure and when a ready
+    document needs re-embedding. A document that is actively processing
+    cannot be requeued, because the current worker owns it.
+    """
+    document = get_document(session, owner_id, document_id)
+    if document.status == DocumentStatus.PROCESSING:
+        raise ConflictError("This document is currently being processed.")
+
+    document.status = DocumentStatus.PENDING
+    document.processing_started_at = None
+    document.processed_at = None
+    document.page_count = None
+    document.chunk_count = None
+    document.error_message = None
+
+    session.commit()
+    session.refresh(document)
+    return document
+
+
 def claim_next_document(session: Session, stale_after_seconds: int) -> uuid.UUID | None:
     """Atomically move one pending document into processing.
 
@@ -118,7 +141,7 @@ def claim_next_document(session: Session, stale_after_seconds: int) -> uuid.UUID
 def replace_chunks(
     session: Session,
     document_id: uuid.UUID,
-    chunks: list[tuple[int, int, str, int]],
+    chunks: list[tuple[int, int, str, int, list[float]]],
 ) -> None:
     """Replace all chunks for a document.
 
@@ -135,8 +158,9 @@ def replace_chunks(
                 chunk_index=chunk_index,
                 content=content,
                 token_count=token_count,
+                embedding=embedding,
             )
-            for page_number, chunk_index, content, token_count in chunks
+            for page_number, chunk_index, content, token_count, embedding in chunks
         ]
     )
 

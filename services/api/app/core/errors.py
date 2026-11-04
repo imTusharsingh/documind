@@ -58,6 +58,12 @@ class ServiceUnavailableError(AppError):
     message = "A required dependency is unavailable."
 
 
+class EmbeddingUnavailableError(AppError):
+    status_code = 503
+    code = "EMBEDDING_UNAVAILABLE"
+    message = "The embedding provider is unavailable."
+
+
 class PayloadTooLargeError(AppError):
     status_code = 413
     code = "PAYLOAD_TOO_LARGE"

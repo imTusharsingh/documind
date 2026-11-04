@@ -2,9 +2,9 @@
 
 DocuMind is an AI-powered document research assistant. This repository is being built incrementally as a learning project covering FastAPI, PostgreSQL, pgvector, RAG, Docker, and production-quality frontend engineering.
 
-**Current status:** Milestone 2 complete — document ingestion.
+**Current status:** Milestone 3 complete — embeddings and semantic search.
 
-![DocuMind Milestone 2](docs/screenshots/milestone-2.png)
+![DocuMind document workspace](docs/screenshots/milestone-2.png)
 
 ## What works today
 
@@ -21,12 +21,16 @@ DocuMind is an AI-powered document research assistant. This repository is being 
 - A **PostgreSQL-backed ingestion worker** using `FOR UPDATE SKIP LOCKED`
 - Page-aware text extraction with PyMuPDF and token chunking with `tiktoken`
 - Document status UI with automatic polling while ingestion is running
+- OpenAI embeddings generated during ingestion and stored in pgvector
+- Semantic search API and UI with owner, readiness, document, and similarity filters
+- Reprocess endpoint for failed documents and existing documents after embedding changes
 - Docker Compose for the web app, API, worker, and database, with health checks
 - **Rstest** + React Testing Library component tests
 - Pytest integration tests against a real PostgreSQL database
 - Ruff and TypeScript checks
+- Milestone learning log and consolidated interview guide
 
-Embeddings, retrieval, and RAG are intentionally not implemented yet.
+Grounded answer generation is intentionally not implemented yet.
 
 ## Architecture
 
@@ -45,6 +49,7 @@ FastAPI
   +-- /api/v1/health/live   liveness, checks nothing
   +-- /api/v1/me            seeded development owner
   +-- /api/v1/documents     upload, list, get, delete
+  +-- /api/v1/search        semantic search over ready chunks
   |
   +-----------------------------+
   v                             v
@@ -167,7 +172,7 @@ documind/
     migrations/            Alembic environment and versions
     tests/                 API, service, worker, and migration tests
   infra/postgres/          PostgreSQL initialization
-  docs/                    Architecture, API, RAG, and learning notes
+  docs/                    Architecture, API, RAG, learning log, and interview guide
   docker-compose.yml       Local development services
 ```
 
@@ -177,9 +182,9 @@ documind/
 - One document owner, seeded by migration `0002`.
 - Text-based PDFs only; scanned PDFs fail with an explicit message because OCR is not included.
 - Chunking uses `cl100k_base`, 350 tokens with 50 tokens of overlap, never crossing page boundaries.
-- No embeddings, vector columns, retrieval, chat, or evaluation yet.
+- No chat, answer generation, or evaluation yet.
 - No secrets are present in the frontend. The OpenAI key belongs in the backend `.env` only.
 
 ## Next milestone
 
-Milestone 3 will add embeddings, pgvector storage, and semantic search over document chunks.
+Milestone 4 will add grounded answers with validated page citations.
