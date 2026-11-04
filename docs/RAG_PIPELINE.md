@@ -30,7 +30,7 @@ Chunking within page boundaries keeps citations precise. Cross-page chunks may b
 
 ## Question answering
 
-Planned for Milestone 4:
+Implemented in Milestone 4:
 
 1. Receive the question and optional document selection.
 2. Resolve the conversation and owner.
@@ -44,6 +44,7 @@ Planned for Milestone 4:
 10. Remove invalid citations.
 11. Return an explicit insufficient-evidence response when no valid evidence exists.
 12. Persist the user message, assistant message, citations, token usage, and latency.
+13. Expose conversation history with owner-scoped endpoints.
 
 ## Key properties
 
@@ -54,6 +55,8 @@ Planned for Milestone 4:
 - Owner filtering happens in the database query.
 - Citations are validated by application code, not trusted from the model.
 - The answer must not use outside knowledge when the documents do not support it.
+- Invalid model citations are removed before persistence and response serialization.
+- Every persisted assistant citation points to the retrieved chunk used for that answer.
 - Ingestion progress is durable because status lives in PostgreSQL, not in process memory.
 
 ## Evaluation

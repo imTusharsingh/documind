@@ -460,5 +460,41 @@ Ruff checks pass. Backend integration tests require a reachable PostgreSQL insta
 
 ### Next milestone
 
-Milestone 4 adds grounded answers with validated page citations and source previews.
+## Milestone 4 — Grounded answers and citations
+
+**Date:** 2026-11-04
+
+### What was built
+
+- Conversation, message, and citation tables through migration `0005`
+- OpenAI structured-output answer provider with a testable provider protocol
+- `POST /api/v1/chat` with retrieval, recent conversation history, and explicit insufficient-evidence handling
+- Citation validation that only accepts chunk ids retrieved for the current request
+- Owner-scoped conversation list and detail endpoints
+- Chat UI with source previews and page-level citations
+
+### Concepts learned
+
+Retrieval is the trust boundary for grounded answers. The model receives only passages selected by the database, and its citation ids are treated as untrusted output. The application maps those ids back to the retrieved set, discards invalid ids, and refuses to present a confident answer when no valid evidence remains.
+
+Conversation persistence is separate from retrieval. A user message and assistant response are stored in one conversation, while citations are normalized into their own table so source metadata, usage, latency, and message history remain inspectable.
+
+The provider is isolated behind a protocol, which makes the complete API flow testable with deterministic embeddings and answers. Production failures return stable dependency errors while detailed provider failures remain in logs.
+
+### Interview questions
+
+1. Why must model citations be validated against retrieved chunks?
+2. How does the application prevent a model from citing a document it was not given?
+3. Why return an explicit insufficient-evidence answer instead of an empty answer?
+4. Why persist citations separately from assistant message text?
+5. How are conversation ids scoped to the current owner?
+6. Why include recent history in the prompt, and why cap its length?
+7. What should happen if the answer provider returns valid JSON but only invalid citation ids?
+8. How would you test citation validity without making an LLM request?
+9. Why store token usage and latency with the assistant message?
+10. How would streaming answers change the persistence and validation protocol?
+
+### Next milestone
+
+Milestone 5 will add retrieval evaluation and quality metrics.
 

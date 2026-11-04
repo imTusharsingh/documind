@@ -193,11 +193,11 @@ Verified behaviour: with PostgreSQL stopped, readiness returns `503` with `"stat
 
 ## Planned extension points
 
-- `app/models/` gains embeddings, conversations, and messages.
+- `app/models/` gains embeddings, conversations, messages, and citations.
 - `app/repositories/` continues to grow focused query modules rather than a generic repository framework.
 - `app/services/` gains embeddings, retrieval, and RAG workflows alongside storage, extraction, chunking, and ingestion.
 - `app/workers/` may gain an embedding pass, or ingestion may extend its current transaction once embeddings exist.
-- `apps/web/src/` gains research and evaluation pages on top of the current routing and API-client pattern.
+- `apps/web/src/` gains research, chat, and evaluation pages on top of the current routing and API-client pattern.
 
 ## Architectural decisions
 

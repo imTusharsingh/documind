@@ -48,6 +48,23 @@ export interface SearchResponse {
   results: SearchResult[];
 }
 
+export interface Citation {
+  chunk_id: string;
+  document_id: string;
+  document_name: string;
+  page_number: number;
+  chunk_index: number;
+  quote: string;
+}
+
+export interface ChatResponse {
+  conversation_id: string;
+  message_id: string;
+  answer: string;
+  citations: Citation[];
+  insufficient_evidence: boolean;
+}
+
 interface ErrorEnvelope {
   error: {
     code: string;
@@ -179,4 +196,24 @@ export async function searchDocuments(query: string, signal?: AbortSignal): Prom
   }
 
   return (await response.json()) as SearchResponse;
+}
+
+export async function askQuestion(
+  question: string,
+  conversationId?: string,
+): Promise<ChatResponse> {
+  const response = await fetch('/api/v1/chat', {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ question, conversation_id: conversationId }),
+  });
+
+  if (!response.ok) {
+    throw await toApiError(response);
+  }
+
+  return (await response.json()) as ChatResponse;
 }

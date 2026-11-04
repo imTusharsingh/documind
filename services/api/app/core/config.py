@@ -46,6 +46,10 @@ class Settings(BaseSettings):
         default=SecretStr(""),
         validation_alias=AliasChoices("OPENAI_API_KEY", "DOCUMIND_OPENAI_API_KEY"),
     )
+    llm_model: str = Field(
+        default="gpt-4.1-mini",
+        validation_alias=AliasChoices("LLM_MODEL", "DOCUMIND_LLM_MODEL"),
+    )
     embedding_model: str = Field(
         default="text-embedding-3-small",
         validation_alias=AliasChoices("EMBEDDING_MODEL", "DOCUMIND_EMBEDDING_MODEL"),

@@ -64,6 +64,12 @@ class EmbeddingUnavailableError(AppError):
     message = "The embedding provider is unavailable."
 
 
+class AnswerUnavailableError(AppError):
+    status_code = 503
+    code = "ANSWER_UNAVAILABLE"
+    message = "The answer provider is unavailable."
+
+
 class PayloadTooLargeError(AppError):
     status_code = 413
     code = "PAYLOAD_TOO_LARGE"

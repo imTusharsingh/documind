@@ -139,6 +139,30 @@ Embeds a query and returns the closest passages from the owner's ready documents
 
 The response includes the source document, page number, chunk index, passage content, and a similarity score between `0` and `1`. Documents that are pending, processing, or failed are never searched. If the provider is not configured or unavailable, the endpoint returns `503 EMBEDDING_UNAVAILABLE`.
 
+### `POST /api/v1/chat`
+
+Asks a grounded question over ready document chunks. Omit `conversation_id` to start a conversation; pass it on later requests to include recent history. Optional `document_ids`, `top_k`, and `min_similarity` narrow retrieval.
+
+```json
+{
+  "question": "What improved in the study?",
+  "conversation_id": null,
+  "document_ids": [],
+  "top_k": 5,
+  "min_similarity": 0.15
+}
+```
+
+The response contains the answer, an `insufficient_evidence` flag, and citations with the chunk id, document name, page number, and source quote. Citations are validated against the chunks retrieved for that request; model-produced ids that were not retrieved are discarded. If no valid citation remains, the response is an explicit insufficient-evidence answer.
+
+### `GET /api/v1/conversations`
+
+Lists the current owner's conversations, newest activity first.
+
+### `GET /api/v1/conversations/{conversation_id}`
+
+Returns one owner-scoped conversation with user and assistant messages and the validated citations saved with each assistant message. Unknown or cross-owner ids return `404 NOT_FOUND`.
+
 ### Document lifecycle
 
 ```text
@@ -194,7 +218,4 @@ The frontend relies on `error.code`, not on message text, so wording can change 
 
 | Method | Path | Purpose | Milestone |
 | --- | --- | --- | --- |
-| `POST` | `/chat` | Ask a grounded question | 4 |
-| `GET` | `/conversations` | List conversations | 4 |
-| `GET` | `/conversations/{id}` | Get a conversation | 4 |
 | `POST` | `/evaluation/run` | Run retrieval evaluation | 6 |

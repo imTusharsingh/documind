@@ -12,6 +12,7 @@ from app.models.document import Document, DocumentChunk, DocumentStatus
 
 @dataclass(frozen=True)
 class SearchHit:
+    chunk_id: uuid.UUID
     document_id: uuid.UUID
     document_name: str
     page_number: int
@@ -38,6 +39,7 @@ def search_chunks(
 
     statement = (
         select(
+            DocumentChunk.id,
             Document.id,
             Document.original_filename,
             DocumentChunk.page_number,
@@ -64,6 +66,7 @@ def search_chunks(
 
     return [
         SearchHit(
+            chunk_id=chunk_id,
             document_id=document_id,
             document_name=document_name,
             page_number=page_number,
@@ -71,7 +74,13 @@ def search_chunks(
             content=content,
             similarity=round(min(1.0, max(0.0, 1 - float(chunk_distance))), 6),
         )
-        for document_id, document_name, page_number, chunk_index, content, chunk_distance in (
-            session.execute(statement).all()
-        )
+        for (
+            chunk_id,
+            document_id,
+            document_name,
+            page_number,
+            chunk_index,
+            content,
+            chunk_distance,
+        ) in session.execute(statement).all()
     ]

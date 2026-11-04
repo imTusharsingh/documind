@@ -5,7 +5,7 @@ def test_migrations_are_at_head(engine: Engine) -> None:
     with engine.connect() as connection:
         version = connection.execute(text("SELECT version_num FROM alembic_version")).scalar()
 
-    assert version == "0004"
+    assert version == "0005"
 
 
 def test_users_table_has_expected_columns(engine: Engine) -> None:
@@ -81,3 +81,9 @@ def test_development_owner_is_seeded_once(engine: Engine) -> None:
         ).all()
 
     assert rows == [("owner@documind.local", "Development Owner")]
+
+
+def test_conversation_tables_exist(engine: Engine) -> None:
+    tables = set(inspect(engine).get_table_names())
+
+    assert {"conversations", "messages", "message_citations"} <= tables

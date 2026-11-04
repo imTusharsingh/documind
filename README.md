@@ -2,9 +2,9 @@
 
 DocuMind is an AI-powered document research assistant. This repository is being built incrementally as a learning project covering FastAPI, PostgreSQL, pgvector, RAG, Docker, and production-quality frontend engineering.
 
-**Current status:** Milestone 3 complete — embeddings and semantic search.
+**Current status:** Milestone 4 complete — grounded answers with citations.
 
-![DocuMind Milestone 3](docs/screenshots/milestone-3.png)
+![DocuMind Milestone 4](docs/screenshots/milestone-4.png)
 
 ## What works today
 
@@ -24,6 +24,7 @@ DocuMind is an AI-powered document research assistant. This repository is being 
 - OpenAI embeddings generated during ingestion and stored in pgvector
 - Semantic search API and UI with owner, readiness, document, and similarity filters
 - Reprocess endpoint for failed documents and existing documents after embedding changes
+- Grounded chat answers with persisted conversations, source previews, and validated citations
 - Docker Compose for the web app, API, worker, and database, with health checks
 - **Rstest** + React Testing Library component tests
 - Pytest integration tests against a real PostgreSQL database
@@ -50,6 +51,8 @@ FastAPI
   +-- /api/v1/me            seeded development owner
   +-- /api/v1/documents     upload, list, get, delete
   +-- /api/v1/search        semantic search over ready chunks
+  +-- /api/v1/chat          grounded answers with validated citations
+  +-- /api/v1/conversations conversation history and source citations
   |
   +-----------------------------+
   v                             v
@@ -182,9 +185,9 @@ documind/
 - One document owner, seeded by migration `0002`.
 - Text-based PDFs only; scanned PDFs fail with an explicit message because OCR is not included.
 - Chunking uses `cl100k_base`, 350 tokens with 50 tokens of overlap, never crossing page boundaries.
-- No chat, answer generation, or evaluation yet.
+- No evaluation dataset or automated retrieval evaluation yet.
 - No secrets are present in the frontend. The OpenAI key belongs in the backend `.env` only.
 
 ## Next milestone
 
-Milestone 4 will add grounded answers with validated page citations.
+Milestone 5 will add retrieval evaluation and quality metrics.

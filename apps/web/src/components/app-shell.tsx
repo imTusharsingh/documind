@@ -1,4 +1,4 @@
-import { FileSearch, FileText, LayoutDashboard, LibraryBig } from 'lucide-react';
+import { FileSearch, FileText, LayoutDashboard, LibraryBig, MessageSquareText } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { NavLink } from 'react-router-dom';
 
@@ -12,6 +12,7 @@ const navigation = [
   { to: '/', label: 'Overview', icon: LayoutDashboard, end: true },
   { to: '/documents', label: 'Documents', icon: FileText, end: false },
   { to: '/search', label: 'Search', icon: FileSearch, end: false },
+  { to: '/chat', label: 'Ask', icon: MessageSquareText, end: false },
 ];
 
 export function AppShell({ children }: AppShellProps) {
@@ -55,8 +56,8 @@ export function AppShell({ children }: AppShellProps) {
           </nav>
 
           <div className="border-t border-border px-6 py-5">
-            <p className="text-xs font-medium text-foreground">Milestone 3</p>
-            <p className="mt-1 text-xs leading-5 text-muted">Embeddings and retrieval</p>
+            <p className="text-xs font-medium text-foreground">Milestone 4</p>
+            <p className="mt-1 text-xs leading-5 text-muted">Grounded answers</p>
           </div>
         </aside>
 

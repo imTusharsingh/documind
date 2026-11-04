@@ -51,7 +51,7 @@ This is the quick-reference version of the interview questions in the learning l
 - How would you test retrieval deterministically without network access?
 - What happens to existing ready documents when migration `0004` runs?
 
-## Milestone 4 — Planned grounded answers
+## Milestone 4 — Grounded answers
 
 - How should a chat request resolve the owner, conversation, and selected documents?
 - How can the application guarantee that every citation belongs to retrieved evidence?
@@ -59,6 +59,14 @@ This is the quick-reference version of the interview questions in the learning l
 - Why should citations contain document ids and page numbers rather than only text?
 - How would you prevent the model from using outside knowledge?
 - What should be persisted for a reproducible answer: messages, citations, latency, and token usage?
+
+## Milestone 5 — Planned evaluation
+
+- How should an evaluation dataset represent questions and expected source pages?
+- What is the difference between Recall@k and mean reciprocal rank?
+- How would you compare embedding models without changing production vectors in place?
+- How can citation validity and page-match accuracy be measured separately?
+- Which retrieval failures require better chunking, better embeddings, or better filters?
 
 ## Cross-cutting production questions
 

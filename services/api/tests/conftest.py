@@ -37,10 +37,11 @@ TEST_DATABASE_URL = os.environ.setdefault(
     "DATABASE_URL", os.getenv("DOCUMIND_TEST_DATABASE_URL", DEFAULT_TEST_DATABASE_URL)
 )
 
-from app.api.deps import get_embedding_provider  # noqa: E402
+from app.api.deps import get_answer_provider, get_embedding_provider  # noqa: E402
 from app.core.config import Settings, get_settings  # noqa: E402
 from app.core.db import get_session  # noqa: E402
 from app.main import create_app  # noqa: E402
+from app.services.answers import AnswerProvider, GeneratedAnswer  # noqa: E402
 from app.services.embeddings import EmbeddingProvider  # noqa: E402
 
 
@@ -73,6 +74,22 @@ class DeterministicEmbeddingProvider(EmbeddingProvider):
             return vector
 
         return [value / norm for value in vector]
+
+
+class DeterministicAnswerProvider(AnswerProvider):
+    """Test answer provider that cites the highest-ranked passage."""
+
+    def __init__(self) -> None:
+        self.calls: list[tuple[str, list[str]]] = []
+
+    def answer(self, question, passages, history) -> GeneratedAnswer:
+        self.calls.append((question, [str(passage.chunk_id) for passage in passages]))
+        return GeneratedAnswer(
+            answer=f"The documents support this answer to: {question}",
+            citation_chunk_ids=[str(passages[0].chunk_id)],
+            input_tokens=10,
+            output_tokens=8,
+        )
 
 
 def _quote(identifier: str) -> str:
@@ -161,15 +178,22 @@ def fake_embedder() -> DeterministicEmbeddingProvider:
 
 
 @pytest.fixture
+def fake_answer_provider() -> DeterministicAnswerProvider:
+    return DeterministicAnswerProvider()
+
+
+@pytest.fixture
 def client(
     session: Session,
     test_settings: Settings,
     fake_embedder: DeterministicEmbeddingProvider,
+    fake_answer_provider: DeterministicAnswerProvider,
 ) -> Iterator[TestClient]:
     app = create_app()
     app.dependency_overrides[get_session] = lambda: session
     app.dependency_overrides[get_settings] = lambda: test_settings
     app.dependency_overrides[get_embedding_provider] = lambda: fake_embedder
+    app.dependency_overrides[get_answer_provider] = lambda: fake_answer_provider
 
     with TestClient(app) as test_client:
         yield test_client

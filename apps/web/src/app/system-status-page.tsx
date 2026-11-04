@@ -34,7 +34,8 @@ const milestones = [
     title: 'Grounded answers',
     description: 'RAG responses with validated page citations and source previews.',
     icon: Sparkles,
-    state: 'Planned',
+    state: 'Available',
+    to: '/chat',
   },
 ];
 
@@ -90,7 +91,7 @@ export function SystemStatusPage() {
         <div>
           <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1 text-xs font-medium text-muted">
             <span className="size-1.5 rounded-full bg-primary" aria-hidden="true" />
-            Milestone 3
+            Milestone 4
           </div>
           <h1 className="text-2xl font-semibold leading-8 tracking-[-0.02em]">System readiness</h1>
           <p className="mt-1 max-w-2xl text-sm leading-[22px] text-muted">
