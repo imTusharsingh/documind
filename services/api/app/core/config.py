@@ -17,12 +17,25 @@ class Settings(BaseSettings):
     environment: str = "development"
     cors_origins: str = "http://localhost:5173"
     log_level: str = "INFO"
-    smtp_host: str = Field(default="", validation_alias=AliasChoices("SMTP_HOST", "DOCUMIND_SMTP_HOST"))
-    smtp_port: int = Field(default=587, validation_alias=AliasChoices("SMTP_PORT", "DOCUMIND_SMTP_PORT"))
-    smtp_username: str = Field(default="", validation_alias=AliasChoices("SMTP_USERNAME", "DOCUMIND_SMTP_USERNAME"))
-    smtp_password: SecretStr = Field(default=SecretStr(""), validation_alias=AliasChoices("SMTP_PASSWORD", "DOCUMIND_SMTP_PASSWORD"))
-    smtp_from: str = Field(default="", validation_alias=AliasChoices("SMTP_FROM", "DOCUMIND_SMTP_FROM"))
-    smtp_starttls: bool = Field(default=True, validation_alias=AliasChoices("SMTP_STARTTLS", "DOCUMIND_SMTP_STARTTLS"))
+    smtp_host: str = Field(
+        default="", validation_alias=AliasChoices("SMTP_HOST", "DOCUMIND_SMTP_HOST")
+    )
+    smtp_port: int = Field(
+        default=587, validation_alias=AliasChoices("SMTP_PORT", "DOCUMIND_SMTP_PORT")
+    )
+    smtp_username: str = Field(
+        default="", validation_alias=AliasChoices("SMTP_USERNAME", "DOCUMIND_SMTP_USERNAME")
+    )
+    smtp_password: SecretStr = Field(
+        default=SecretStr(""),
+        validation_alias=AliasChoices("SMTP_PASSWORD", "DOCUMIND_SMTP_PASSWORD"),
+    )
+    smtp_from: str = Field(
+        default="", validation_alias=AliasChoices("SMTP_FROM", "DOCUMIND_SMTP_FROM")
+    )
+    smtp_starttls: bool = Field(
+        default=True, validation_alias=AliasChoices("SMTP_STARTTLS", "DOCUMIND_SMTP_STARTTLS")
+    )
 
     database_url: str = Field(
         default="postgresql+psycopg://documind:documind_dev_password@localhost:5432/documind",

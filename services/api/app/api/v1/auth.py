@@ -7,19 +7,36 @@ from sqlalchemy.orm import Session
 
 from app.core.config import Settings, get_settings
 from app.core.db import get_session
+from app.models.auth import AuthSession
 from app.models.user import User
 from app.schemas.auth import AuthResponse, LoginRequest, RegisterRequest, VerifyOtpRequest
-from app.services.auth import create_challenge, create_session, hash_password, verify_challenge, verify_password
+from app.services.auth import (
+    _digest,
+    create_challenge,
+    create_session,
+    hash_password,
+    verify_challenge,
+    verify_password,
+)
 
 router = APIRouter()
 SESSION_COOKIE = "documind_session"
 
 
 @router.post("/register", response_model=AuthResponse, status_code=201)
-def register(request: RegisterRequest, session: Annotated[Session, Depends(get_session)], settings: Annotated[Settings, Depends(get_settings)]) -> AuthResponse:
+def register(
+    request: RegisterRequest,
+    session: Annotated[Session, Depends(get_session)],
+    settings: Annotated[Settings, Depends(get_settings)],
+) -> AuthResponse:
     if session.scalar(select(User).where(User.email == request.email)):
         raise HTTPException(status_code=409, detail="An account with this email already exists.")
-    user = User(id=uuid.uuid4(), email=request.email, display_name=request.display_name.strip(), password_hash=hash_password(request.password))
+    user = User(
+        id=uuid.uuid4(),
+        email=request.email,
+        display_name=request.display_name.strip(),
+        password_hash=hash_password(request.password),
+    )
     session.add(user)
     session.flush()
     try:
@@ -27,12 +44,16 @@ def register(request: RegisterRequest, session: Annotated[Session, Depends(get_s
         session.commit()
     except Exception:
         session.rollback()
-        raise HTTPException(status_code=503, detail="Could not send verification email.")
+        raise HTTPException(status_code=503, detail="Could not send verification email.") from None
     return AuthResponse(message="Verification code sent.", challenge_id=str(challenge.id))
 
 
 @router.post("/login", response_model=AuthResponse)
-def login(request: LoginRequest, session: Annotated[Session, Depends(get_session)], settings: Annotated[Settings, Depends(get_settings)]) -> AuthResponse:
+def login(
+    request: LoginRequest,
+    session: Annotated[Session, Depends(get_session)],
+    settings: Annotated[Settings, Depends(get_settings)],
+) -> AuthResponse:
     user = session.scalar(select(User).where(User.email == request.email))
     if not user or not verify_password(request.password, user.password_hash):
         raise HTTPException(status_code=401, detail="Invalid email or password.")
@@ -41,20 +62,40 @@ def login(request: LoginRequest, session: Annotated[Session, Depends(get_session
         session.commit()
     except Exception:
         session.rollback()
-        raise HTTPException(status_code=503, detail="Could not send verification email.")
+        raise HTTPException(status_code=503, detail="Could not send verification email.") from None
     return AuthResponse(message="Verification code sent.", challenge_id=str(challenge.id))
 
 
 @router.post("/verify", response_model=AuthResponse)
-def verify(request: VerifyOtpRequest, response: Response, session: Annotated[Session, Depends(get_session)]) -> AuthResponse:
+def verify(
+    request: VerifyOtpRequest, response: Response, session: Annotated[Session, Depends(get_session)]
+) -> AuthResponse:
     user = verify_challenge(session, uuid.UUID(request.challenge_id), request.code)
     if not user:
         raise HTTPException(status_code=400, detail="Invalid or expired verification code.")
     token = create_session(session, user)
-    response.set_cookie(SESSION_COOKIE, token, httponly=True, samesite="lax", secure=False, max_age=30 * 24 * 60 * 60)
+    response.set_cookie(
+        SESSION_COOKIE,
+        token,
+        httponly=True,
+        samesite="lax",
+        secure=False,
+        max_age=30 * 24 * 60 * 60,
+    )
     return AuthResponse(message="Signed in.")
 
 
 @router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
-def logout(response: Response) -> None:
+def logout(
+    response: Response,
+    session: Annotated[Session, Depends(get_session)],
+    documind_session: Annotated[str | None, Cookie()] = None,
+) -> None:
+    if documind_session:
+        item = session.scalar(
+            select(AuthSession).where(AuthSession.token_hash == _digest(documind_session))
+        )
+        if item:
+            session.delete(item)
+            session.commit()
     response.delete_cookie(SESSION_COOKIE)
