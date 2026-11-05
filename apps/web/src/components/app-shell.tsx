@@ -1,9 +1,11 @@
-import { BarChart3, FileSearch, FileText, LayoutDashboard, MessageSquareText, Settings, UserRound, WalletCards } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { AlertTriangle, ArrowRight, BarChart3, FileSearch, FileText, LayoutDashboard, MessageSquareText, Settings, UserRound, WalletCards } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { NavLink } from 'react-router-dom';
 
 import { cn } from '@/lib/utils';
 import { BrandLockup, BrandMark } from '@/components/ui';
+import { fetchWorkspaceSettings } from '@/lib/api';
 
 interface AppShellProps {
   children: ReactNode;
@@ -20,6 +22,9 @@ const navigation = [
 ];
 
 export function AppShell({ children }: AppShellProps) {
+  const settingsQuery = useQuery({ queryKey: ['workspace-settings'], queryFn: ({ signal }) => fetchWorkspaceSettings(signal) });
+  const needsApiKey = settingsQuery.data && !settingsQuery.data.api_key_configured;
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <div className="mx-auto flex min-h-screen w-full max-w-[1440px]">
@@ -95,7 +100,10 @@ export function AppShell({ children }: AppShellProps) {
             </nav>
           </header>
 
-          <div className="mx-auto w-full max-w-[1200px] px-6 py-8 md:px-8">{children}</div>
+          <div className="mx-auto w-full max-w-[1200px] px-6 py-8 md:px-8">
+            {needsApiKey ? <div role="status" className="mb-5 flex items-center justify-between gap-3 rounded-xl border border-warning/25 bg-warning/10 px-3.5 py-2.5 text-xs text-warning"><span className="flex min-w-0 items-center gap-2"><AlertTriangle size={15} className="shrink-0" /><span>Configure an API key to enable AI extraction and answers.</span></span><NavLink to="/settings" className="inline-flex shrink-0 items-center gap-1 font-semibold hover:underline">Open settings <ArrowRight size={13} /></NavLink></div> : null}
+            {children}
+          </div>
         </main>
       </div>
     </div>
