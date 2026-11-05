@@ -25,7 +25,9 @@ export function AppShell({ children }: AppShellProps) {
       <div className="mx-auto flex min-h-screen w-full max-w-[1440px]">
         <aside className="sticky top-0 hidden h-screen w-64 shrink-0 border-r border-border bg-surface/95 backdrop-blur md:flex md:flex-col">
           <div className="flex h-16 items-center gap-3 border-b border-border px-6">
-            <BrandLockup className="h-9 max-w-[148px]" />
+            <NavLink to="/home" aria-label="Open DocuMind home" className="rounded-md focus-visible:outline-none">
+              <BrandLockup className="h-9 max-w-[148px]" />
+            </NavLink>
           </div>
 
           <nav aria-label="Primary" className="flex-1 space-y-1 px-3 py-4">
@@ -62,7 +64,7 @@ export function AppShell({ children }: AppShellProps) {
         <main className="min-w-0 flex-1">
           <header className="sticky top-0 z-20 border-b border-border bg-surface/95 px-6 backdrop-blur md:hidden">
             <div className="flex h-16 items-center gap-3">
-              <BrandMark />
+              <NavLink to="/home" aria-label="Open DocuMind home" className="rounded-md focus-visible:outline-none"><BrandMark /></NavLink>
               <p className="text-sm font-semibold tracking-tight">DocuMind</p>
             </div>
             <nav aria-label="Primary" className="-mx-1 flex gap-1 overflow-x-auto pb-2">

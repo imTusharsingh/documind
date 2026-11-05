@@ -44,7 +44,6 @@ class Settings(BaseSettings):
 
     openai_api_key: SecretStr = Field(
         default=SecretStr(""),
-        validation_alias=AliasChoices("OPENAI_API_KEY", "DOCUMIND_OPENAI_API_KEY"),
     )
     llm_model: str = Field(
         default="gpt-4.1-mini",
