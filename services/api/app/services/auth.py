@@ -1,5 +1,6 @@
 import hashlib
 import hmac
+import logging
 import secrets
 import uuid
 from datetime import UTC, datetime, timedelta
@@ -10,6 +11,9 @@ from sqlalchemy.orm import Session
 from app.models.auth import AuthChallenge, AuthSession
 from app.models.user import User
 from app.services.email import send_otp_email
+
+
+logger = logging.getLogger(__name__)
 
 
 def _digest(value: str) -> str:
@@ -31,11 +35,14 @@ def verify_password(password: str, encoded: str | None) -> bool:
 
 
 def create_challenge(session: Session, user: User, settings) -> AuthChallenge:
-    code = f"{secrets.randbelow(1_000_000):06d}"
+    code = "000000" if settings.environment == "development" else f"{secrets.randbelow(1_000_000):06d}"
     challenge = AuthChallenge(id=uuid.uuid4(), user_id=user.id, code_hash=_digest(code), expires_at=datetime.now(UTC) + timedelta(minutes=10))
     session.add(challenge)
     session.flush()
-    send_otp_email(settings, user.email, code)
+    if settings.environment == "development" and not settings.smtp_host:
+        logger.info("Development OTP for %s: %s", user.email, code)
+    else:
+        send_otp_email(settings, user.email, code)
     return challenge
 
 
