@@ -130,6 +130,16 @@ Expected readiness response:
 
 Migrations run before Uvicorn starts, so a fresh volume is provisioned automatically. When PostgreSQL is unreachable the readiness endpoint returns `503` with `"status": "degraded"`, while the liveness endpoint keeps returning `200`.
 
+### Development authentication
+
+The development environment includes a seeded test account:
+
+- Email: `tushar.singh+test@documind.com`
+- Password: `test1234`
+- OTP: `000000`
+
+Use these credentials only with `DOCUMIND_ENVIRONMENT=development`. In development, OTP delivery is optional when SMTP is not configured; the API logs the fixed code instead. Production environments continue to generate random OTPs and require SMTP delivery.
+
 ## Local development without Docker
 
 ### API
