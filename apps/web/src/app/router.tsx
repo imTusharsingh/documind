@@ -10,6 +10,7 @@ import { SettingsPage } from './settings-page';
 import { UsagePage } from './usage-page';
 import { DocsPage } from './docs-page';
 import { MarketingPage } from './marketing-page';
+import { AuthPage } from './auth-page';
 
 export function AppRouter() {
   const hostname = window.location.hostname;
@@ -21,6 +22,7 @@ export function AppRouter() {
       <Routes>
         <Route path="/home" element={<MarketingPage />} />
         <Route path="/docs" element={<DocsPage />} />
+        <Route path="/login" element={<AuthPage />} />
         <Route
           path="/"
           element={

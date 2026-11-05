@@ -14,6 +14,7 @@ from app.models.evaluation import (
     EvaluationRunResult,
 )
 from app.models.user import User
+from app.models.auth import AuthChallenge, AuthSession
 from app.models.workspace_settings import WorkspaceSettings
 
 __all__ = [
@@ -30,5 +31,7 @@ __all__ = [
     "MessageCitation",
     "MessageRole",
     "User",
+    "AuthChallenge",
+    "AuthSession",
     "WorkspaceSettings",
 ]

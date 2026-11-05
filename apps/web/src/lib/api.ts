@@ -204,6 +204,16 @@ export class ApiError extends Error {
   }
 }
 
+export async function authenticate(path: 'register' | 'login' | 'verify', body: unknown): Promise<{ message: string; challenge_id?: string }> {
+  const response = await fetch(`/api/v1/auth/${path}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(body) });
+  if (!response.ok) throw await toApiError(response);
+  return (await response.json()) as { message: string; challenge_id?: string };
+}
+
+export async function logout(): Promise<void> {
+  await fetch('/api/v1/auth/logout', { method: 'POST', credentials: 'include' });
+}
+
 async function toApiError(response: Response): Promise<ApiError> {
   try {
     const body = (await response.json()) as Partial<ErrorEnvelope>;
