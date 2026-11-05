@@ -1,4 +1,4 @@
-import { BarChart3, FileSearch, FileText, LayoutDashboard, MessageSquareText, Settings, WalletCards } from 'lucide-react';
+import { BarChart3, FileSearch, FileText, LayoutDashboard, MessageSquareText, Settings, UserRound, WalletCards } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { NavLink } from 'react-router-dom';
 
@@ -56,6 +56,7 @@ export function AppShell({ children }: AppShellProps) {
           </nav>
 
           <div className="border-t border-border px-3 py-4">
+            <NavLink to="/profile" className={({ isActive }) => cn('mb-3 flex items-center gap-2.5 rounded-md px-3 py-2 text-sm font-medium', isActive ? 'bg-citation text-primary' : 'text-muted hover:bg-background hover:text-foreground')}><UserRound size={16} />Profile</NavLink>
             <p className="px-3 pt-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">DocuMind workspace</p>
             <p className="px-3 pt-1 text-xs text-muted">Grounded research, in one place.</p>
           </div>
@@ -67,6 +68,7 @@ export function AppShell({ children }: AppShellProps) {
               <NavLink to="/home" aria-label="Open DocuMind home" className="rounded-md focus-visible:outline-none"><BrandMark /></NavLink>
               <p className="text-sm font-semibold tracking-tight">DocuMind</p>
             </div>
+            <NavLink to="/profile" className="mb-2 flex items-center gap-2 text-xs font-medium text-muted"><UserRound size={14} />Profile & sign out</NavLink>
             <nav aria-label="Primary" className="-mx-1 flex gap-1 overflow-x-auto pb-2">
               {navigation.map((item) => {
                 const Icon = item.icon;

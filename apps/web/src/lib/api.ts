@@ -214,6 +214,12 @@ export async function logout(): Promise<void> {
   await fetch('/api/v1/auth/logout', { method: 'POST', credentials: 'include' });
 }
 
+export async function fetchCurrentOwner(signal?: AbortSignal): Promise<OwnerResponse> {
+  const response = await fetch('/api/v1/me', { credentials: 'include', signal });
+  if (!response.ok) throw await toApiError(response);
+  return (await response.json()) as OwnerResponse;
+}
+
 async function toApiError(response: Response): Promise<ApiError> {
   try {
     const body = (await response.json()) as Partial<ErrorEnvelope>;
