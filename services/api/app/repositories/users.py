@@ -16,11 +16,7 @@ class MissingOwnerError(AppError):
 
 
 def get_development_owner(session: Session) -> User:
-    """Return the single seeded owner used by the unauthenticated MVP.
-
-    When authentication arrives this function is replaced by a lookup of
-    the authenticated principal; callers keep the same shape.
-    """
+    """Return the seeded owner used by development fixtures."""
     owner = session.get(User, DEVELOPMENT_OWNER_ID)
     if owner is None:
         raise MissingOwnerError()

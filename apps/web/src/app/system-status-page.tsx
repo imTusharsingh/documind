@@ -264,7 +264,7 @@ export function SystemStatusPage() {
               <h2 className="text-lg font-semibold leading-7">Workspace owner</h2>
               <p className="mt-1 max-w-xl text-sm leading-[22px] text-muted">
                 Read from PostgreSQL. The seeded development owner is the single identity used by
-                the MVP until authentication is added.
+                your authenticated workspace session.
               </p>
             </div>
           </div>

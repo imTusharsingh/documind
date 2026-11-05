@@ -13,7 +13,9 @@ import hashlib
 import math
 import os
 import re
+import uuid
 from collections.abc import Callable, Iterator, Sequence
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import pymupdf
@@ -41,6 +43,8 @@ from app.api.deps import get_answer_provider, get_embedding_provider  # noqa: E4
 from app.core.config import Settings, get_settings  # noqa: E402
 from app.core.db import get_session  # noqa: E402
 from app.main import create_app  # noqa: E402
+from app.models.auth import AuthSession  # noqa: E402
+from app.repositories.users import DEVELOPMENT_OWNER_ID  # noqa: E402
 from app.services.answers import AnswerProvider, GeneratedAnswer  # noqa: E402
 from app.services.embeddings import EmbeddingProvider  # noqa: E402
 
@@ -195,7 +199,19 @@ def client(
     app.dependency_overrides[get_embedding_provider] = lambda: fake_embedder
     app.dependency_overrides[get_answer_provider] = lambda: fake_answer_provider
 
+    raw_session = "test-session-token"
+    session.add(
+        AuthSession(
+            id=uuid.uuid4(),
+            token_hash=hashlib.sha256(raw_session.encode()).hexdigest(),
+            user_id=DEVELOPMENT_OWNER_ID,
+            expires_at=datetime.now(UTC) + timedelta(days=1),
+        )
+    )
+    session.flush()
+
     with TestClient(app) as test_client:
+        test_client.cookies.set("documind_session", raw_session)
         yield test_client
 
     app.dependency_overrides.clear()

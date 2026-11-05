@@ -1,11 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
 import { AlertTriangle, ArrowRight, BarChart3, FileSearch, FileText, LayoutDashboard, MessageSquareText, Settings, UserRound, WalletCards } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 
 import { cn } from '@/lib/utils';
 import { BrandLockup, BrandMark } from '@/components/ui';
-import { fetchWorkspaceSettings } from '@/lib/api';
+import { ApiError, fetchCurrentOwner, fetchWorkspaceSettings } from '@/lib/api';
 
 interface AppShellProps {
   children: ReactNode;
@@ -22,8 +23,13 @@ const navigation = [
 ];
 
 export function AppShell({ children }: AppShellProps) {
+  const navigate = useNavigate();
+  const ownerQuery = useQuery({ queryKey: ['current-owner'], queryFn: ({ signal }) => fetchCurrentOwner(signal), retry: false });
   const settingsQuery = useQuery({ queryKey: ['workspace-settings'], queryFn: ({ signal }) => fetchWorkspaceSettings(signal) });
   const needsApiKey = settingsQuery.data && !settingsQuery.data.api_key_configured;
+  useEffect(() => {
+    if (ownerQuery.error instanceof ApiError && ownerQuery.error.status === 401) navigate('/login', { replace: true });
+  }, [navigate, ownerQuery.error]);
 
   return (
     <div className="min-h-screen bg-background text-foreground">

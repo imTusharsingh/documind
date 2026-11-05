@@ -8,7 +8,7 @@ from app.models.user import User
 from app.repositories.users import DEVELOPMENT_OWNER_ID
 
 
-def test_returns_the_seeded_development_owner(client: TestClient) -> None:
+def test_returns_the_authenticated_owner(client: TestClient) -> None:
     response = client.get("/api/v1/me")
 
     assert response.status_code == 200
@@ -19,17 +19,15 @@ def test_returns_the_seeded_development_owner(client: TestClient) -> None:
     assert body["created_at"]
 
 
-def test_reports_a_missing_owner_explicitly(client: TestClient, session: Session) -> None:
+def test_rejects_a_missing_authenticated_owner(client: TestClient, session: Session) -> None:
     session.execute(delete(User).where(User.id == uuid.UUID(str(DEVELOPMENT_OWNER_ID))))
     session.flush()
     session.expunge_all()
 
     response = client.get("/api/v1/me")
 
-    assert response.status_code == 500
-    body = response.json()
-    assert body["error"]["code"] == "DEVELOPMENT_OWNER_MISSING"
-    assert "alembic upgrade head" in body["error"]["message"]
+    assert response.status_code == 401
+    assert response.json()["error"]["message"] == "Authentication required."
 
 
 def test_workspace_settings_can_update_and_reset(client: TestClient) -> None:

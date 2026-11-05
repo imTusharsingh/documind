@@ -12,7 +12,6 @@ from app.models.auth import AuthChallenge, AuthSession
 from app.models.user import User
 from app.services.email import send_otp_email
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -35,8 +34,15 @@ def verify_password(password: str, encoded: str | None) -> bool:
 
 
 def create_challenge(session: Session, user: User, settings) -> AuthChallenge:
-    code = "000000" if settings.environment == "development" else f"{secrets.randbelow(1_000_000):06d}"
-    challenge = AuthChallenge(id=uuid.uuid4(), user_id=user.id, code_hash=_digest(code), expires_at=datetime.now(UTC) + timedelta(minutes=10))
+    code = (
+        "000000" if settings.environment == "development" else f"{secrets.randbelow(1_000_000):06d}"
+    )
+    challenge = AuthChallenge(
+        id=uuid.uuid4(),
+        user_id=user.id,
+        code_hash=_digest(code),
+        expires_at=datetime.now(UTC) + timedelta(minutes=10),
+    )
     session.add(challenge)
     session.flush()
     if settings.environment == "development" and not settings.smtp_host:
@@ -48,7 +54,11 @@ def create_challenge(session: Session, user: User, settings) -> AuthChallenge:
 
 def verify_challenge(session: Session, challenge_id: uuid.UUID, code: str) -> User | None:
     challenge = session.get(AuthChallenge, challenge_id)
-    if not challenge or challenge.expires_at < datetime.now(UTC) or not hmac.compare_digest(challenge.code_hash, _digest(code)):
+    if (
+        not challenge
+        or challenge.expires_at < datetime.now(UTC)
+        or not hmac.compare_digest(challenge.code_hash, _digest(code))
+    ):
         return None
     user = session.get(User, challenge.user_id)
     session.delete(challenge)
@@ -57,7 +67,14 @@ def verify_challenge(session: Session, challenge_id: uuid.UUID, code: str) -> Us
 
 def create_session(session: Session, user: User) -> str:
     raw = secrets.token_urlsafe(48)
-    session.add(AuthSession(id=uuid.uuid4(), token_hash=_digest(raw), user_id=user.id, expires_at=datetime.now(UTC) + timedelta(days=30)))
+    session.add(
+        AuthSession(
+            id=uuid.uuid4(),
+            token_hash=_digest(raw),
+            user_id=user.id,
+            expires_at=datetime.now(UTC) + timedelta(days=30),
+        )
+    )
     session.commit()
     return raw
 

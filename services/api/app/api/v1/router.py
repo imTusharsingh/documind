@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 
 from app.api.v1 import (
+    auth,
     chat,
     documents,
     evaluation,
@@ -10,7 +11,6 @@ from app.api.v1 import (
     search,
     settings,
     usage,
-    auth,
 )
 
 api_router = APIRouter()

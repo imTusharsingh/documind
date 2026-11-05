@@ -34,6 +34,7 @@ DocuMind is an AI-powered document research assistant. This repository is being 
 - Separate product marketing (`/home`) and documentation (`/docs`) surfaces with responsive navigation and favicon branding
 - Email/password authentication with development OTP verification, a profile page, and sign-out controls
 - Workspace-wide API key configuration banner with a direct Settings link
+- Authenticated workspace routes reject missing or revoked sessions; logout invalidates the server-side session
 
 ## Product surfaces
 

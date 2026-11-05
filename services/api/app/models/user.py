@@ -8,13 +8,7 @@ from app.models.base import Base
 
 
 class User(Base):
-    """A workspace owner.
-
-    The MVP has exactly one seeded development owner and no
-    authentication. Ownership columns are still modelled from the start
-    so that adding authentication later is a change in wiring rather
-    than a schema redesign.
-    """
+    """A DocuMind workspace member and resource owner."""
 
     __tablename__ = "users"
 
