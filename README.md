@@ -32,6 +32,7 @@ DocuMind is an AI-powered document research assistant. This repository is being 
 - Product workspace with a shared design system, overview, settings, and token usage history
 - Server-backed workspace settings for provider tokens, models, extraction, upload, and retrieval defaults, with reset-to-defaults support
 - Separate product marketing (`/home`) and documentation (`/docs`) surfaces with responsive navigation and favicon branding
+- Email/password authentication with development OTP verification, a profile page, and sign-out controls
 
 ## Product surfaces
 
@@ -75,6 +76,8 @@ FastAPI
   +-- /api/v1/evaluation/datasets/{id}/trend historical quality trend
   +-- /api/v1/settings      workspace provider and extraction configuration
   +-- /api/v1/usage         owner-scoped token usage history
+  +-- /api/v1/me            authenticated profile details
+  +-- /api/v1/auth/*        registration, login, OTP verification, and logout
   |
   +-----------------------------+
   v                             v

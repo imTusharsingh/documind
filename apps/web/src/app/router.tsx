@@ -11,6 +11,7 @@ import { UsagePage } from './usage-page';
 import { DocsPage } from './docs-page';
 import { MarketingPage } from './marketing-page';
 import { AuthPage } from './auth-page';
+import { ProfilePage } from './profile-page';
 
 export function AppRouter() {
   const hostname = window.location.hostname;
@@ -63,6 +64,7 @@ export function AppRouter() {
         />
         <Route path="/usage" element={<AppShell><UsagePage /></AppShell>} />
         <Route path="/settings" element={<AppShell><SettingsPage /></AppShell>} />
+        <Route path="/profile" element={<AppShell><ProfilePage /></AppShell>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
